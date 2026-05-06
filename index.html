@@ -653,20 +653,35 @@ background: linear-gradient(to right,
     .mobile-nav-cta button{width:100%;padding:.9rem;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;}
 
     @media (max-width: 900px) { 
-      /* MOBILE NAV SQUISHER - Prevents JP text from covering the logo */
-      nav { padding: 0.8rem 1rem !important; }
-      .nav-right { gap: 0.3rem !important; }
-      .lang-toggle { margin-right: 0.3rem !important; }
-      .lang-btn { padding: 0.3rem 0.5rem !important; font-size: 0.6rem !important; }
-      /* Hides top-bar buttons on mobile to prevent overflow. 
-         Users will access these inside the Hamburger menu instead. */
-      .nav-wip, .nav-cta, .nav-back { 
-        display: none !important; 
+      /* MOBILE NAV FIX - Allows wrapping without removing buttons */
+      nav { 
+        padding: 0.8rem 1rem !important; 
+        flex-wrap: wrap; /* Allows contents to wrap to a second row */
+        padding-right: 4rem !important; /* Leaves room for the pinned hamburger */
       }
-      .nav-logo { font-size: 1.2rem !important; flex-shrink: 0; }
-
-      /* Keeps your hamburger menu working */
-      .nav-hamburger { display: flex; } 
+      .nav-logo { 
+        font-size: 1.2rem !important; 
+        white-space: nowrap !important; /* Prevents vertical stacking of logo */
+        margin-bottom: 0.2rem;
+      }
+      .nav-right { 
+        gap: 0.4rem !important; 
+        flex-wrap: wrap; /* Allows buttons to wrap gracefully */
+      }
+      .lang-toggle { margin-right: 0.2rem !important; }
+      .lang-btn { padding: 0.3rem 0.5rem !important; font-size: 0.6rem !important; }
+      .nav-wip, .nav-cta, .nav-back { 
+        padding: 0.4rem 0.6rem !important; 
+        font-size: 0.55rem !important; 
+        white-space: nowrap !important;
+      }
+      /* Pin the hamburger to the top right so it never moves */
+      .nav-hamburger { 
+        display: flex !important; 
+        position: absolute; 
+        top: 0.8rem; 
+        right: 1rem; 
+      } 
     }
 @media (max-width: 900px) {
   /* FIX: Removes the BG Image and the Fade Overlay on Mobile Only */
