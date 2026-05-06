@@ -63,9 +63,23 @@
         position: static !important; 
         transform: none !important;
     }
-    .goog-tooltip { display: none !important; }
-    .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
-    #google_translate_element { display: none !important; }
+    
+    /* --- NEW ADDITIONS TO KILL THE HOVER POPUP --- */
+    #goog-gt-tt, .goog-te-balloon-frame { 
+        display: none !important; 
+    }
+    .goog-tooltip { 
+        display: none !important; 
+    }
+    .goog-text-highlight { 
+        background-color: transparent !important; 
+        border: none !important; 
+        box-shadow: none !important; 
+        pointer-events: none !important; /* Stops the cursor from triggering the invisible box */
+    }
+    #google_translate_element { 
+        display: none !important; 
+    }
 
     /* NAV */
     nav {
@@ -651,7 +665,29 @@ background: linear-gradient(to right,
         grid-template-columns: 1fr !important; 
         gap: 3rem; 
       }
+      /* --- MOBILE AFFORDANCE FOR GAMEPLAY LOOP --- */
+    /* Adds a pulsing "Tap to View" badge to closed panels */
+    .loop-panel:not(.is-active) .lp-idle::after {
+      content: '[ TAP TO VIEW ▾ ]';
+      position: absolute;
+      bottom: 1.2rem;
+      right: 1.2rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--amber-glow);
+      background: rgba(6, 4, 2, 0.85);
+      border: 1px solid rgba(212, 135, 10, 0.4);
+      padding: 0.35rem 0.6rem;
+      pointer-events: none; /* Prevents the badge from blocking the tap */
+      animation: pulseTap 2s infinite;
+    }
 
+    /* Makes the badge bounce slightly to catch the eye */
+    @keyframes pulseTap {
+      0%, 100% { opacity: 0.5; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(3px); }
+    }
       .role-card {
         padding: 0 1rem 2rem 1rem; 
       }
@@ -1045,7 +1081,7 @@ background: linear-gradient(to right,
     <li><a href="#">Press Kit</a></li>
     <li><a href="#">Privacy</a></li>
   </ul>
-  <p class="footer-copy">© 2024 The Crazy Capitaan Studios</p>
+  <p class="footer-copy">© 2025 Dung Beetles Studio · <span style="color:rgba(107,92,69,.5);font-size:.5rem;">Press Ctrl+Shift+A for admin</span></p>
 </footer>
 
 <script>

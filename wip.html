@@ -49,9 +49,23 @@
         position: static !important; 
         transform: none !important;
     }
-    .goog-tooltip { display: none !important; }
-    .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
-    #google_translate_element { display: none !important; }
+    
+    /* --- NEW ADDITIONS TO KILL THE HOVER POPUP --- */
+    #goog-gt-tt, .goog-te-balloon-frame { 
+        display: none !important; 
+    }
+    .goog-tooltip { 
+        display: none !important; 
+    }
+    .goog-text-highlight { 
+        background-color: transparent !important; 
+        border: none !important; 
+        box-shadow: none !important; 
+        pointer-events: none !important; /* Stops the cursor from triggering the invisible box */
+    }
+    #google_translate_element { 
+        display: none !important; 
+    }
     /* NAV */
     nav{position:fixed;top:0;left:0;right:0;z-index:600;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3rem;backdrop-filter:blur(22px) saturate(180%);background:rgba(6,4,2,.82);border-bottom:1px solid var(--border);transition:padding .3s;}
     .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.12em;color:var(--amber-glow);text-decoration:none;}
