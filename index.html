@@ -658,10 +658,10 @@ background: linear-gradient(to right,
       .nav-right { gap: 0.3rem !important; }
       .lang-toggle { margin-right: 0.3rem !important; }
       .lang-btn { padding: 0.3rem 0.5rem !important; font-size: 0.6rem !important; }
+      /* Hides top-bar buttons on mobile to prevent overflow. 
+         Users will access these inside the Hamburger menu instead. */
       .nav-wip, .nav-cta, .nav-back { 
-        padding: 0.4rem 0.6rem !important; 
-        font-size: 0.55rem !important; 
-        white-space: nowrap !important;
+        display: none !important; 
       }
       .nav-logo { font-size: 1.2rem !important; flex-shrink: 0; }
 

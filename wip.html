@@ -449,7 +449,20 @@
     .wip-mobile-nav-cta{margin-top:1.5rem;}
     .wip-mobile-nav-cta a{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.15em;text-transform:uppercase;text-align:center;padding:.9rem;border:1px solid var(--amber);color:var(--amber-glow);text-decoration:none;display:block;transition:background .25s;}
     .wip-mobile-nav-cta a:hover{background:rgba(212,135,10,.15);}
-@media(max-width:900px){.nav-hamburger{display:flex;}.nav-back{display:none;}.wip-badge{font-size:.6rem;}.nav-links{display:none;}}
+@media(max-width:900px){
+  nav { padding: 0.8rem 1rem; }
+  .nav-right { gap: 0.4rem; }
+  .nav-hamburger { display: flex; }
+  .nav-back { display: none; }
+  .nav-links { display: none; }
+  /* Prevents text from stacking vertically */
+  .wip-badge { 
+    font-size: 0.55rem; 
+    padding: 0.4rem 0.6rem; 
+    white-space: nowrap; 
+    flex-shrink: 0; 
+  }
+}
 /* Centered portrait container with reduced width to shrink vertical height */
 .role-img { 
   width: 70%; /* Reduced from 100% to make the card smaller vertically */
