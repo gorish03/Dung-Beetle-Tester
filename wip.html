@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WIP — DUNG BEETLES DEVLOG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <script src="wip-content.js?v=1777530646"></script>
+
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#060402;--bg2:#0d0a06;--mud:#1e1208;--panel:#110c06;
+      --amber:#d4870a;--amber-glow:#f5a623;--amber-dim:rgba(212,135,10,.12);
+      --green:#7ec845;--green-neon:#aaff44;
+      --purple:#c466ff;--blue:#66aaff;--red:#ff6b35;
+      --text:#e8dcc8;--muted:#6b5c45;--white:#fff8ee;
+      --border:rgba(212,135,10,.14);--border2:rgba(212,135,10,.08);
+    }
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
+    @media(hover:none),(pointer:coarse){#cursor,#cursor-ring{display:none!important;}body{cursor:auto!important;}}
+    body{cursor:none;}
+    #cursor{position:fixed;width:12px;height:12px;background:var(--amber-glow);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:transform .15s;}
+    #cursor-ring{position:fixed;width:38px;height:38px;border:1.5px solid var(--amber);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .2s ease,border-color .2s;opacity:.55;}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.04;pointer-events:none;z-index:9000;}
+    /* TRANSLATION TOGGLE */
+    .lang-toggle { display: flex; align-items: center; border: 1px solid rgba(212,135,10,.3); margin-right: 1rem; }
+    .lang-btn { font-family: 'Share Tech Mono', monospace; font-size: .65rem; padding: .4rem .7rem; cursor: pointer; color: var(--muted); transition: all .2s; }
+    .lang-btn.active { background: rgba(212,135,10,.15); color: var(--amber-glow); }
+    .lang-btn:hover:not(.active) { color: var(--white); background: rgba(212,135,10,.05); }
+    
+    /* HIDE DEFAULT GOOGLE TRANSLATE JUNK (NUKE FROM ORBIT) */
+    .goog-te-banner-frame,
+    .goog-te-banner-frame.skiptranslate,
+    iframe.goog-te-banner-frame,
+    iframe[name="goog-te-banner-frame"],
+    .skiptranslate > iframe { 
+        display: none !important; 
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+    }
+    body { 
+        top: 0px !important; 
+        position: static !important; 
+        transform: none !important;
+    }
+    .goog-tooltip { display: none !important; }
+    .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+    #google_translate_element { display: none !important; }
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:600;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 3rem;backdrop-filter:blur(22px) saturate(180%);background:rgba(6,4,2,.82);border-bottom:1px solid var(--border);transition:padding .3s;}
+    .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.12em;color:var(--amber-glow);text-decoration:none;}
+    .nav-logo span{color:var(--green-neon);}
+    .nav-links{display:flex;gap:2.4rem;list-style:none;}
+    .nav-links a{font-family:'Share Tech Mono',monospace;font-size:.78rem;letter-spacing:.18em;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .25s;}
+    .nav-links a:hover{color:var(--amber-glow);}
+    .nav-right{display:flex;align-items:center;gap:.7rem;}
+    .wip-badge{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--green-neon);border:1px solid rgba(170,255,68,.35);padding:.45rem 1rem;animation:wipBlink 2.8s ease-in-out infinite;}
+    @keyframes wipBlink{0%,100%{opacity:1}50%{opacity:.5}}
+    .nav-back{font-family:'Share Tech Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-decoration:none;border:1px solid rgba(107,92,69,.35);padding:.45rem 1rem;transition:color .2s,border-color .2s;}
+    .nav-back:hover{color:var(--amber-glow);border-color:var(--amber);}
+    .live-dot{display:inline-block;width:7px;height:7px;background:var(--green-neon);border-radius:50%;margin-right:.4rem;box-shadow:0 0 8px var(--green-neon);animation:pulse 1.4s infinite;}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.5}}
+
+    /* HERO */
+    #hero{position:relative;height:100vh;min-height:720px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    #hero-canvas{position:absolute;inset:0;width:100%;height:100%;}
+    .hero-content{position:relative;z-index:2;text-align:center;padding:0 2rem 6rem;}
+    .hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:.5em;color:var(--green-neon);text-transform:uppercase;opacity:0;animation:fadeUp .7s .3s forwards;}
+    .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,14vw,13rem);line-height:.85;letter-spacing:.02em;color:var(--white);text-shadow:0 0 90px rgba(212,135,10,.3);opacity:0;animation:fadeUp .85s .5s forwards;}
+    .hero-title .stroke{color:transparent;-webkit-text-stroke:1.5px var(--amber);}
+    .hero-sub{margin-top:1.4rem;font-size:1.1rem;color:var(--muted);max-width:500px;margin-inline:auto;line-height:1.6;opacity:0;animation:fadeUp .85s .7s forwards;}
+    .hero-counters{display:flex;gap:2.5rem;justify-content:center;flex-wrap:wrap;margin-top:2.8rem;opacity:0;animation:fadeUp .85s .9s forwards;}
+    .hc{text-align:center;}
+    .hc-num{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--amber-glow);line-height:1;}
+    .hc-label{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.28em;color:var(--muted);text-transform:uppercase;}
+    .scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0;animation:fadeUp .9s 1.2s forwards; transition: opacity 0.4s ease;}
+    .scroll-hint.hidden { opacity: 0 !important; pointer-events: none; }
+    .scroll-hint span{font-family:'Share Tech Mono',monospace;font-size:.92rem;letter-spacing:.35em;color:var(--muted);text-transform:uppercase;}
+    .scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,var(--amber),transparent);animation:scrollAnim 2s infinite;}
+    @keyframes scrollAnim{0%,100%{opacity:.4}50%{opacity:1}}
+
+    /* MARQUEE */
+    .marquee-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.7rem 0;background:var(--mud);}
+    .marquee-track{display:flex;gap:2.5rem;animation:marquee 20s linear infinite;white-space:nowrap;width:max-content;will-change:transform;-webkit-transform:translateZ(0);transform:translateZ(0);}
+    .marquee-track span{font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.22em;color:var(--muted);}
+    .marquee-track .acc{color:var(--amber);}
+    @keyframes marquee{0%{-webkit-transform:translateX(0);transform:translateX(0);}100%{-webkit-transform:translateX(-50%);transform:translateX(-50%);}}
+
+    /* SECTIONS */
+    section{padding:6rem 5vw;}
+    .s-tag{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:.38em;color:var(--green-neon);text-transform:uppercase;display:block;margin-bottom:.9rem;}
+    .s-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,5.5vw,5rem);line-height:1;letter-spacing:.02em;color:var(--white);}
+    .s-title em{color:var(--amber-glow);font-style:normal;}
+
+    /* DEVLOG */
+    #devlog{background:var(--bg2);}
+    .devlog-layout{display:grid;grid-template-columns:1fr 1.6fr;gap:4rem;align-items:start;margin-top:3.5rem;}
+    .devlog-left p{font-size:1.05rem;color:var(--muted);line-height:1.72;margin-top:1rem;}
+    .devlog-left p strong{color:var(--text);}
+    .version-badge{display:inline-block;margin-top:1.8rem;font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:.18em;color:var(--amber-glow);border:1px solid var(--amber);padding:.6rem 1.2rem;background:rgba(212,135,10,.06);}
+    .milestone-box{margin-top:2rem;padding:1.2rem 1.4rem;background:var(--mud);border:1px solid var(--border);border-left:2px solid var(--amber);}
+    .milestone-box .ms-tag{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--green-neon);margin-bottom:.5rem;}
+    .milestone-box .ms-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--white);}
+    .milestone-box .ms-sub{font-size:.88rem;color:var(--muted);margin-top:.3rem;}
+    .devlog-feed{display:flex;flex-direction:column;gap:0;}
+    .log-entry{border-left:1px solid var(--border);padding:1.4rem 1.8rem;position:relative;transition:border-color .3s,background .3s;}
+    .log-entry::before{content:'';position:absolute;left:-5px;top:1.6rem;width:9px;height:9px;border-radius:50%;background:var(--bg2);border:1.5px solid var(--amber);transition:background .3s;}
+    .log-entry:hover{border-color:rgba(212,135,10,.45);background:rgba(212,135,10,.03);}
+    .log-entry:hover::before{background:var(--amber);}
+    .log-date{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem;}
+    .log-title{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.06em;color:var(--white);margin-bottom:.4rem;}
+    .log-body{font-size:.94rem;color:var(--muted);line-height:1.65;}
+    .log-tag{display:inline-block;margin-top:.6rem;font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;padding:.25rem .65rem;border:1px solid;}
+    .log-tag.art{border-color:rgba(212,135,10,.4);color:var(--amber);}
+    .log-tag.design{border-color:rgba(170,255,68,.35);color:var(--green-neon);}
+    .log-tag.build{border-color:rgba(100,170,255,.35);color:var(--blue);}
+    .log-tag.balance{border-color:rgba(196,102,255,.35);color:var(--purple);}
+
+    /* DEVLOG COLLAPSE FEATURE */
+    .devlog-feed-container {
+      position: relative;
+      width: 100%;
+    }
+    
+    .devlog-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-height: 720px; /* Cuts off right around the 5th entry */
+      overflow: hidden;
+      transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .devlog-feed.expanded {
+      max-height: 4000px; /* Expands to fit all content */
+    }
+    
+    .feed-fade {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 160px;
+      background: linear-gradient(to bottom, transparent, var(--bg2) 90%);
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    
+    .feed-fade.hidden {
+      opacity: 0;
+    }
+    
+    .expand-btn {
+      width: 100%;
+      margin-top: 1rem;
+      background: transparent;
+      border: 1px dashed rgba(212,135,10,.3);
+      color: var(--amber);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 1rem;
+      cursor: none; /* Keeps your custom cursor working */
+      transition: all 0.3s;
+    }
+    
+    .expand-btn:hover {
+      border-color: var(--amber);
+      background: rgba(212,135,10,.05);
+      color: var(--amber-glow);
+    }
+    
+    .bounce-arrow {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 0.9rem;
+      animation: bounceDown 2s infinite;
+    }
+    
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    /* CONCEPT ART */
+    #gallery{background:var(--bg);}
+    .gallery-header{margin-bottom:3rem;}
+    .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(212,135,10,.06);overflow:visible;}
+    /* Update the card to allow for full height */
+.art-card {
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+  /* Removed the aspect-ratio from here to let content dictate height */
+  cursor: none;
+  transition: border-color .35s, box-shadow .45s, transform .35s;
+  border: 1px solid transparent;
+}
+    .art-card:hover{border-color:rgba(212,135,10,.6);box-shadow:0 0 22px rgba(212,135,10,.4),0 0 55px rgba(212,135,10,.12),inset 0 0 24px rgba(212,135,10,.05);transform:scale(1.025);z-index:2;}
+    .art-card canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover; /* This stops the squeeze and scales the drawing proportionally! */
+    }
+    .art-card-info{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(6,4,2,.95) 0%,transparent 100%);padding:1.8rem 1.2rem .9rem;transform:translateY(4px);transition:transform .3s;}
+    .art-card:hover .art-card-info{transform:translateY(0);}
+    .art-role-tag{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;margin-bottom:.35rem;}
+    .art-role-tag.r1{color:var(--amber);}
+    .art-role-tag.r2{color:var(--red);}
+    .art-role-tag.r3{color:var(--green-neon);}
+    .art-role-tag.r4{color:#c4a84a;}
+    .art-role-tag.r5{color:var(--blue);}
+    .art-role-tag.r6{color:var(--purple);}
+    .art-card h3{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.06em;color:var(--white);margin-bottom:.25rem;}
+    .art-card p{font-size:.82rem;color:var(--muted);}
+.art-status {
+      position: absolute;
+      top: .8rem;
+      right: .8rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .55rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      padding: .3rem .65rem;
+      background: rgba(6, 4, 2, 0.85);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      /* FIX: Bring badges to the front layer */
+      z-index: 15; 
+    }
+    .art-status.done{border-color:rgba(170,255,68,.4);color:var(--green-neon);}
+    .art-status.wip{border-color:rgba(212,135,10,.4);color:var(--amber);animation:wipBlink 2s infinite;}
+    .art-status.soon{border-color:rgba(107,92,69,.4);color:var(--muted);}
+
+    /* SLIDESHOW (Media Vault) */
+    #gameplay{background:var(--mud);}
+
+    .slideshow-outer{position:relative;border:1px solid var(--border);border-radius:2px;transition:border-color .4s,box-shadow .5s;}
+    .slideshow-outer:hover{border-color:var(--amber);box-shadow:0 0 28px rgba(212,135,10,.4),0 0 70px rgba(212,135,10,.14),inset 0 0 40px rgba(212,135,10,.04);}
+
+    .slide-main{position:relative;aspect-ratio:16/9;background:#060402;overflow:hidden;}
+    .slide-item{position:absolute;inset:0;opacity:0;transition:opacity .65s ease,transform .65s ease;transform:scale(1.04);z-index:1;}
+    .slide-item.active{opacity:1;transform:scale(1);z-index:2;}
+    .slide-item img,.slide-item video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease;}
+    .slideshow-outer:hover .slide-item.active img,
+    .slideshow-outer:hover .slide-item.active video{transform:scale(1.035);}
+
+    .slide-info-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(6,4,2,.96) 0%,rgba(6,4,2,.4) 60%,transparent 100%);padding:4rem 2rem 1.6rem;z-index:3;pointer-events:none;}
+    .slide-tag{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.28em;color:var(--amber);text-transform:uppercase;margin-bottom:.4rem;}
+    .slide-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.06em;color:var(--white);}
+    .slide-desc{font-size:.88rem;color:var(--muted);margin-top:.3rem;}
+
+    .slide-counter{position:absolute;top:1rem;right:1rem;font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.2em;color:var(--muted);background:rgba(6,4,2,.8);border:1px solid var(--border);padding:.35rem .8rem;z-index:4;}
+
+    .slide-pause-badge{position:absolute;top:1rem;left:1rem;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:.22em;color:var(--amber);background:rgba(6,4,2,.82);border:1px solid rgba(212,135,10,.35);padding:.32rem .7rem;z-index:4;opacity:0;transition:opacity .3s;pointer-events:none;}
+    /* Desktop: show on hover */
+    @media(hover:hover){.slideshow-outer:hover .slide-pause-badge{opacity:1;}}
+
+    .slide-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(212,135,10,.1);z-index:5;}
+    .slide-progress-fill{height:100%;background:linear-gradient(to right,var(--amber),var(--green-neon));width:0%;}
+
+    .slide-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:4;font-family:'Share Tech Mono',monospace;font-size:.85rem;color:var(--muted);background:rgba(6,4,2,.75);border:1px solid var(--border);width:46px;height:46px;display:flex;align-items:center;justify-content:center;cursor:none;transition:color .2s,border-color .2s,box-shadow .2s,background .2s;}
+    .slide-btn:hover{color:var(--amber-glow);border-color:var(--amber);box-shadow:0 0 14px rgba(212,135,10,.4);background:rgba(6,4,2,.92);}
+    .slide-btn.prev{left:1.2rem;}
+    .slide-btn.next{right:1.2rem;}
+
+    .slide-thumbs{display:flex;gap:2px;background:rgba(212,135,10,.05);overflow-x:auto;scrollbar-width:none;padding:2px;}
+    .slide-thumbs::-webkit-scrollbar{display:none;}
+    .slide-thumb{flex:0 0 130px;aspect-ratio:16/9;position:relative;overflow:hidden;cursor:none;border:1px solid transparent;opacity:.45;transition:opacity .3s,border-color .3s,box-shadow .3s;}
+    .slide-thumb img,.slide-thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
+    .slide-thumb:hover{opacity:.8;border-color:rgba(212,135,10,.4);}
+    .slide-thumb.active{opacity:1;border-color:var(--amber);box-shadow:0 0 12px rgba(212,135,10,.45);}
+    .slide-thumb-num{position:absolute;bottom:.3rem;left:.45rem;font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:.15em;color:rgba(232,220,200,.5);}
+
+@media(max-width:700px){
+      .slide-thumb{flex:0 0 90px;}
+      .slide-title{font-size:1.5rem;}
+      .slide-btn{width:38px;height:38px;}
+      
+      /* Hides the tag and description on mobile */
+      .slide-tag, .slide-desc { display: none !important; }
+      
+      /* Shifts the title downwards by reducing the bottom padding */
+      .slide-info-overlay { padding-bottom: 0.6rem !important; }
+    }
+
+    /* PROGRESS */
+    #progress{background:var(--bg2);}
+    .progress-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:3rem;}
+    .prog-item{padding:1.6rem 1.8rem;background:var(--bg);border:1px solid var(--border2);position:relative;overflow:hidden;transition:border-color .3s;}
+    .prog-item:hover{border-color:rgba(212,135,10,.3);}
+    .prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;}
+    .prog-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em;color:var(--white);}
+    .prog-pct{font-family:'Share Tech Mono',monospace;font-size:.78rem;letter-spacing:.1em;color:var(--amber-glow);}
+    .prog-bar-bg{height:3px;background:rgba(212,135,10,.12);}
+    .prog-bar-fill{height:100%;background:linear-gradient(to right,var(--amber),var(--green-neon));width:0%;transition:width 1.4s cubic-bezier(.23,1,.32,1);}
+    .prog-status{margin-top:.7rem;font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
+    .prog-corner{position:absolute;width:14px;height:14px;border-color:rgba(212,135,10,.25);border-style:solid;}
+    .prog-corner.tl{top:-1px;left:-1px;border-width:1.5px 0 0 1.5px;}
+    .prog-corner.br{bottom:-1px;right:-1px;border-width:0 1.5px 1.5px 0;}
+
+    /* COUNTDOWN */
+    #countdown-section{background:var(--bg);padding:6rem 5vw;text-align:center;position:relative;overflow:hidden;}
+    #countdown-section::before{content:'BETA';font-family:'Bebas Neue',sans-serif;font-size:25vw;letter-spacing:.05em;color:transparent;-webkit-text-stroke:1px rgba(212,135,10,.05);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;}
+    .cd-header{position:relative;z-index:1;}
+    .cd-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,4vw,3.5rem);color:var(--white);}
+    .cd-sub{font-size:1rem;color:var(--muted);margin-top:.6rem;margin-bottom:3rem;}
+    .cd-grid{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;}
+    .cd-unit { text-align: center; -webkit-perspective: 800px; perspective: 800px; }
+    .cd-num {
+      position: relative;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5.5rem;
+      color: var(--amber-glow);
+      line-height: 1;
+      letter-spacing: .02em;
+      background: #0d0a06;
+      border: 1px solid rgba(212,135,10,.3);
+      padding: 1.5rem 1.8rem;
+      min-width: 120px;
+      display: inline-block;
+      border-radius: 6px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.02);
+      -webkit-transform-style: preserve-3d;
+      transform-style: preserve-3d;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+    /* The classic horizontal split line */
+    .cd-num::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #060402;
+      margin-top: -1px;
+      box-shadow: 0 1px 0 rgba(212,135,10,.15);
+    }
+    /* The flipping animation */
+    .cd-num.flip-anim {
+      -webkit-animation: classicFlip 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+      animation: classicFlip 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+    }
+    @-webkit-keyframes classicFlip {
+      0%   { -webkit-transform: rotateX(0deg);   filter: brightness(1); }
+      49%  { -webkit-transform: rotateX(-90deg); filter: brightness(0.3); }
+      50%  { -webkit-transform: rotateX(90deg);  filter: brightness(0.3); }
+      100% { -webkit-transform: rotateX(0deg);   filter: brightness(1); }
+    }
+    @keyframes classicFlip {
+      0%   { transform: rotateX(0deg);   filter: brightness(1); }
+      49%  { transform: rotateX(-90deg); filter: brightness(0.3); }
+      50%  { transform: rotateX(90deg);  filter: brightness(0.3); }
+      100% { transform: rotateX(0deg);   filter: brightness(1); }
+    }
+    .cd-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.28em;color:var(--muted);text-transform:uppercase;margin-top:.3rem;}
+    .cd-note{margin-top:2.5rem;font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:.2em;color:var(--muted);position:relative;z-index:1;}
+
+    /* COMMUNITY */
+    #community{background:var(--mud);}
+    .community-layout{display:grid;grid-template-columns:1.2fr 1fr;gap:4rem;align-items:center;margin-top:3rem;}
+    .comm-canvas-wrap{position:relative;aspect-ratio:1;border:1px solid var(--border);}
+    .comm-canvas-wrap canvas{width:100%;height:100%;display:block;}
+    .comm-corner{position:absolute;width:20px;height:20px;border-color:var(--amber);border-style:solid;}
+    .comm-corner.tl{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+    .comm-corner.tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+    .comm-corner.bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+    .comm-corner.br{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+    .comm-text p{margin-top:1.2rem;font-size:1.05rem;color:var(--muted);line-height:1.72;}
+    .comm-text p strong{color:var(--text);}
+    .social-links{margin-top:2rem;display:flex;flex-direction:column;gap:.6rem;}
+    .social-link{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.2rem;border:1px solid var(--border2);background:transparent;transition:all .28s;text-decoration:none;}
+    .social-link:hover{border-color:var(--amber);background:rgba(212,135,10,.06);}
+    .social-link-left{display:flex;align-items:center;gap:.9rem;}
+    .social-icon{font-size:1.1rem;}
+    .social-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.08em;color:var(--white);}
+    .social-desc{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.15em;color:var(--muted);}
+    .social-arrow{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--muted);transition:color .2s,transform .2s;}
+    .social-link:hover .social-arrow{color:var(--amber-glow);transform:translateX(4px);}
+
+    /* UPCOMING */
+    #upcoming{background:var(--bg2);}
+    .upcoming-list{display:flex;flex-direction:column;gap:2px;background:rgba(212,135,10,.06);margin-top:3rem;}
+    .uc-row{background:var(--bg2);display:grid;grid-template-columns:160px 1fr auto;align-items:center;padding:1.4rem 2rem;gap:2rem;transition:background .25s;border-left:2px solid transparent;}
+    .uc-row:hover{background:rgba(212,135,10,.04);border-left-color:var(--amber);}
+    .uc-eta{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;}
+    .uc-info h3{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.05em;color:var(--white);}
+    .uc-info p{font-size:.88rem;color:var(--muted);margin-top:.15rem;}
+    .uc-status{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;padding:.35rem .8rem;border:1px solid;white-space:nowrap;}
+    .uc-status.planning{border-color:rgba(107,92,69,.4);color:var(--muted);}
+    .uc-status.active{border-color:rgba(212,135,10,.45);color:var(--amber);animation:wipBlink 2s infinite;}
+    .uc-status.soon{border-color:rgba(170,255,68,.4);color:var(--green-neon);}
+
+    /* FOOTER */
+    .wip-footer{padding:2.2rem 5vw;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+    .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:.12em;color:var(--amber);}
+    .footer-links{display:flex;gap:1.6rem;list-style:none;}
+    .footer-links a{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.18em;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s;}
+    .footer-links a:hover{color:var(--amber-glow);}
+    .footer-copy{font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.15em;color:var(--muted);}
+
+    /* REVEAL */
+    .reveal,.reveal-left,.reveal-right{opacity:0;transition:opacity .8s ease,transform .8s ease;}
+    .reveal{transform:translateY(24px);}
+    .reveal-left{transform:translateX(-28px);}
+    .reveal-right{transform:translateX(28px);}
+    .reveal.vis{opacity:1;transform:translateY(0);}
+    .reveal-left.vis{opacity:1;transform:translateX(0);}
+    .reveal-right.vis{opacity:1;transform:translateX(0);}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:1000px){.gallery-grid{grid-template-columns:1fr 1fr;}.gameplay-grid{grid-template-columns:1fr;}.devlog-layout{grid-template-columns:1fr;}.community-layout{grid-template-columns:1fr;}.progress-grid{grid-template-columns:1fr;}}
+    @media(max-width:700px){nav{padding:1rem 1.4rem;}.gallery-grid{grid-template-columns:1fr;}.uc-row{grid-template-columns:1fr;gap:.5rem;}.uc-status{width:fit-content;}.cd-unit{padding:1.4rem 1.8rem;min-width:80px;}.cd-num{font-size:3rem;}}
+
+    /* FIX 6: Hamburger + mobile nav */
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;background:transparent;border:1px solid rgba(212,135,10,.3);cursor:pointer;padding:8px;transition:border-color .25s;flex-shrink:0;}
+    .nav-hamburger:hover{border-color:var(--amber);}
+    .nav-hamburger span{display:block;width:100%;height:1.5px;background:var(--amber);transition:transform .3s ease,opacity .3s ease;transform-origin:center;}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+    .nav-hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+    .nav-hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+    .wip-mobile-nav{position:fixed;top:0;left:0;right:0;background:rgba(6,4,2,.97);backdrop-filter:blur(20px);z-index:490;padding:6rem 2rem 2.5rem;display:flex;flex-direction:column;gap:0;transform:translateY(-100%);transition:transform .4s cubic-bezier(.4,0,.2,1);border-bottom:1px solid rgba(212,135,10,.2);}
+    .wip-mobile-nav.open{transform:translateY(0);}
+    .wip-mobile-nav a{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.08em;color:var(--muted);text-decoration:none;text-transform:uppercase;padding:.9rem 0;border-bottom:1px solid rgba(212,135,10,.08);transition:color .2s,padding-left .2s;display:block;}
+    .wip-mobile-nav a:hover{color:var(--amber-glow);padding-left:.6rem;}
+    .wip-mobile-nav-cta{margin-top:1.5rem;}
+    .wip-mobile-nav-cta a{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.15em;text-transform:uppercase;text-align:center;padding:.9rem;border:1px solid var(--amber);color:var(--amber-glow);text-decoration:none;display:block;transition:background .25s;}
+    .wip-mobile-nav-cta a:hover{background:rgba(212,135,10,.15);}
+@media(max-width:900px){.nav-hamburger{display:flex;}.nav-back{display:none;}.wip-badge{font-size:.6rem;}.nav-links{display:none;}}
+/* Centered portrait container with reduced width to shrink vertical height */
+.role-img { 
+  width: 70%; /* Reduced from 100% to make the card smaller vertically */
+  aspect-ratio: 1080 / 1920; 
+  height: auto; 
+  display: block; 
+  position: relative; 
+  background: #050302; 
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* Ensure the photo fills the container without cropping */
+.role-photo { 
+  position: absolute; 
+  inset: 0; 
+  width: 100%; 
+  height: 100%; 
+  object-fit: contain; /* Shows the full image without cutting it off */
+  z-index: 1; 
+}
+
+/* Fix for the info overlay to match the new narrower width */
+.art-card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(6,4,2,0.95) 0%, transparent 100%);
+  padding: 1.2rem 1rem 0.8rem; /* Slightly reduced padding for smaller cards */
+  z-index: 10;
+  pointer-events: none;
+}
+
+.role-img-overlay {
+  position: absolute; 
+  bottom: 0; 
+  left: 0; 
+  right: 0; 
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+  z-index: 2; /* Sits between the photo and the text */
+  pointer-events: none;
+}
+  </style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">DUNG<span>BEETLES</span></a>
+  <ul class="nav-links">
+    <li><a href="#devlog">Dev Log</a></li>
+    <li><a href="#gallery">The Roster</a></li>
+    <li><a href="#gameplay">How It Feels</a></li>
+    <li><a href="#community">Community</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <div class="lang-btn active" id="lang-en" onclick="changeLanguage('en')">EN</div>
+      <div class="lang-btn" id="lang-ja" onclick="changeLanguage('ja')">JP</div>
+    </div>
+    <span class="wip-badge"><span class="live-dot"></span>Live Devlog</span>
+    <a class="nav-back" href="index.html">&#8592; Main Site</a>
+    <button class="nav-hamburger" id="wip-hamburger" aria-label="Open menu" onclick="toggleWipNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- WIP MOBILE NAV -->
+<div class="wip-mobile-nav" id="wip-mobile-nav">
+  <a href="#gameplay" onclick="closeWipNav()">How It Feels</a>
+  <a href="#gallery" onclick="closeWipNav()">The Roster</a>
+  <a href="#countdown-section" onclick="closeWipNav()">Beta Invite</a>
+  <a href="#devlog" onclick="closeWipNav()">Dev Log</a>
+  <a href="#community" onclick="closeWipNav()">Community</a>
+  <div class="wip-mobile-nav-cta">
+    <a href="index.html">&#8592; Back to Main Site</a>
+  </div>
+</div>
+
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-eyebrow">// The Crazy Capitaan Studios &middot; Dev Transparency Log</div>
+    <h1 class="hero-title">DUNG IN<br><span class="stroke">PROGRESS</span></h1>
+    <p class="hero-sub">Raw. Unfiltered. Real. Everything we're building &mdash; concept art, gameplay clips, feature builds, and what's coming next.</p>
+    <div class="hero-counters">
+      <div class="hc"><div class="hc-num" id="hc-days">0</div><div class="hc-label">Days In Dev</div></div>
+      <div class="hc"><div class="hc-num">7</div><div class="hc-label">Roles Designed</div></div>
+      <div class="hc"><div class="hc-num" id="hc-builds">0</div><div class="hc-label">Build Commits</div></div>
+<div class="hc"><div class="hc-num">100+</div><div class="hc-label">In The Swarm</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="acc">&#9679;</span><span>Carrier State</span><span class="acc">&#9679;</span><span>Dung Roll Physics</span><span class="acc">&#9679;</span>
+    <span>Role Balance Pass</span><span class="acc">&#9679;</span><span>Arena Tileset</span><span class="acc">&#9679;</span>
+    <span>Sprint FX</span><span class="acc">&#9679;</span><span>Beta Incoming</span><span class="acc">&#9679;</span>
+    <span>Storm Kit Reveal</span><span class="acc">&#9679;</span><span>Stealth Rework</span><span class="acc">&#9679;</span>
+    <span>Map Design v1</span><span class="acc">&#9679;</span><span>UI Polish</span><span class="acc">&#9679;</span>
+    <span>Carrier State</span><span class="acc">&#9679;</span><span>Dung Roll Physics</span><span class="acc">&#9679;</span>
+    <span>Role Balance Pass</span><span class="acc">&#9679;</span><span>Map Layouting</span><span class="acc">&#9679;</span>
+    <span>Sprint FX</span><span class="acc">&#9679;</span><span>Beta Incoming</span><span class="acc">&#9679;</span>
+    <span>Beetles Kit Reveal</span><span class="acc">&#9679;</span><span>Ability Rework</span>
+  </div>
+</div>
+
+<section id="devlog">
+  <span class="s-tag reveal">// Devlog</span>
+  <h2 class="s-title reveal">LATEST <em>UPDATES</em></h2>
+  <div class="devlog-layout">
+    
+    <!-- LEFT SIDE: Updated Milestone and Text -->
+    <div class="devlog-left reveal-left">
+      <div class="version-badge">Current Build: v0.0.2 &mdash; Pre-Alpha</div>
+      <p style="margin-top:1.6rem;">Documenting the journey of <strong>Dung Beetles</strong>. The code is private, but the process isn't.</p>
+      <p>This devlog is where we share unfiltered updates as the game evolves. Expect a real look at our design shifts, art progress, and mechanics tweaking. Just pure game dev, from failures to breakthroughs.</p>
+      <div class="milestone-box">
+        <div class="ms-tag">// LATEST MILESTONE</div>
+        <div class="ms-title">Beetle Animation Ready</div>
+        <div class="ms-sub">The character model has been fully rigged and is now prepared for the animation pipeline.</div>
+      </div>
+    </div>
+
+<!-- RIGHT SIDE: The Log Feed Container -->
+<div class="devlog-feed-container reveal-right">
+  
+  <!-- The Feed itself (Note the ID, your JS needs this to expand it) -->
+  <div class="devlog-feed" id="devlog-feed">
+    
+    <div class="log-entry">
+        <div class="log-date">Week 14 &middot; Apr 2026</div>
+        <div class="log-title">Beetle Became Animation Ready</div>
+        <div class="log-body">The character model has been fully rigged and is now prepared for the animation pipeline. Ready to start bringing it to life.</div>
+        <span class="log-tag art">Art</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 14 &middot; Apr 2026</div>
+        <div class="log-title">First 3D Model of Beetle</div>
+        <div class="log-body">Finished the initial 3D blockout and modeling for the main Beetle character based on our finalized concepts.</div>
+        <span class="log-tag art">Art</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 12 &middot; Apr 2026</div>
+        <div class="log-title">Multiplayer Testing Done</div>
+        <div class="log-body">Ran the first successful multiplayer tests to ensure network stability and basic player synchronization. It's chaotic but functioning.</div>
+        <span class="log-tag build">Build</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 12 &middot; Apr 2026</div>
+        <div class="log-title">First Ever Concept Art of Beetle's Hand Drawn</div>
+        <div class="log-body">Transitioned to hand-drawn concept art to refine the beetle's physical design, proportions, and personality.</div>
+        <span class="log-tag art">Art</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 10 &middot; Mar 2026</div>
+        <div class="log-title">Game Title "Dung Beetles" Finalised</div>
+        <div class="log-body">Locked in the official name for the project. Simple, accurate, and sets the exact tone we want.</div>
+        <span class="log-tag design">Design</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 8 &middot; Mar 2026</div>
+        <div class="log-title">First Game Design Document (GDD)</div>
+        <div class="log-body">Completed the initial GDD outlining core mechanics, gameplay loops, and the overall scope of the project.</div>
+        <span class="log-tag design">Design</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 8 &middot; Mar 2026</div>
+        <div class="log-title">Game Development Got Started</div>
+        <div class="log-body">Core development has officially kicked off. Transitioned from purely conceptual pre-production into active building.</div>
+        <span class="log-tag build">Build</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 1 &middot; Jan 2026</div>
+        <div class="log-title">First Ever Concept Art of Beetles Using AI</div>
+        <div class="log-body">Generated initial mood boards and character concepts using AI to establish a baseline aesthetic and gather quick ideas.</div>
+        <span class="log-tag art">Art</span>
+      </div>
+
+      <div class="log-entry">
+        <div class="log-date">Week 0 &middot; Jan 2026</div>
+        <div class="log-title">The Entire Game Started</div>
+        <div class="log-body">The foundational idea was born and initial brainstorming for the project commenced. The journey begins here.</div>
+        <span class="log-tag design">Design</span>
+      </div>
+    </div>
+
+  <!-- The fading gradient at the bottom -->
+  <div class="feed-fade" id="feed-fade"></div>
+  
+<!-- The togglable button -->
+      <button class="expand-btn" id="expand-btn" onclick="toggleDevlog()">
+        Show More <span class="bounce-arrow">&#8595;</span>
+      </button>
+
+</div>
+</section>
+
+<section id="gallery">
+  <div class="gallery-header">
+    <span class="s-tag reveal">// Concept Art &middot; Role Sheets</span>
+    <h2 class="s-title reveal">THE <em>ROSTER</em></h2>
+    <p class="reveal" style="margin-top:.8rem;font-size:1rem;color:var(--muted);max-width:540px;">Six roles. All hand-designed. Early concept sheets from our art direction notes.</p>
+  </div>
+  <div class="gallery-grid reveal">
+<div class="art-card">
+  <div class="role-img">
+    <canvas class="role-canvas" data-role="defender" width="400" height="300"></canvas>
+    <img src="Beetles/defender.png" alt="Defender" class="role-photo" onerror="this.style.display='none'">
+    <div class="role-img-overlay"></div>
+  </div>
+  <div class="art-status wip">In Progress</div>
+  
+  <div class="art-card-info">
+    <div class="art-role-tag r1">Role 01 · Tank</div>
+    <h3>Defender</h3>
+    <p>Armored bulkhead, deployable cover, frontline stabilizer.</p>
+  </div>
+</div>
+<div class="art-card">
+  <div class="role-img">
+    <canvas class="role-canvas" data-role="attacker" width="400" height="300"></canvas>
+    
+    <img src="Beetles/attacker.png" alt="Attacker" class="role-photo" onerror="this.style.display='none'">
+    
+    <div class="role-img-overlay"></div>
+  </div>
+  
+  <div class="art-status wip">In Progress</div>
+  
+  <div class="art-card-info">
+    <div class="art-role-tag r2">Role 02 · Disruptor</div>
+    <h3>Attacker</h3>
+    <p>Aggressive impact, dung siphoning, formation breaker.</p>
+  </div>
+</div>
+<div class="art-card">
+  <div class="role-img">
+    <canvas class="role-canvas" data-role="scout" width="400" height="300"></canvas>
+    
+    <img src="Beetles/scout.png" alt="Scout" class="role-photo" onerror="this.style.display='none'">
+    
+    <div class="role-img-overlay"></div>
+  </div>
+  
+  <div class="art-status wip">In Progress</div>
+  
+  <div class="art-card-info">
+    <div class="art-role-tag r3">Role 03 · Intel</div>
+    <h3>Scout</h3>
+    <p>Aerial reconnaissance, rapid transit, route marker.</p>
+  </div>
+</div>
+<div class="art-card">
+  <div class="role-img">
+    <canvas class="role-canvas" data-role="trapper" width="400" height="300"></canvas>
+    
+    <img src="Beetles/trapper.png" alt="Trapper" class="role-photo" onerror="this.style.display='none'">
+    
+    <div class="role-img-overlay"></div>
+  </div>
+  
+  <div class="art-status wip">In Progress</div>
+  
+  <div class="art-card-info">
+    <div class="art-role-tag r4">Role 04 · Control</div>
+    <h3>Trapper</h3>
+    <p>Subterranean movement, grass blending, ambush specialist.</p>
+  </div>
+</div>
+<div class="art-card">
+  <div class="role-img">
+    <canvas class="role-canvas" data-role="stealth" width="400" height="300"></canvas>
+    
+    <img src="Beetles/stealth.png" alt="Stealth" class="role-photo" onerror="this.style.display='none'">
+    
+    <div class="role-img-overlay"></div>
+  </div>
+  
+  <div class="art-status soon">Coming Soon</div>
+  
+  <div class="art-card-info">
+    <div class="art-role-tag r5">Role 05 · Infiltrator</div>
+    <h3>Stealth</h3>
+    <p>Proximity snares, early warning system, lane lockdown.</p>
+  </div>
+</div>
+    <div class="art-card">
+  <div class="role-img">
+    <canvas class="role-canvas" data-role="storm" width="400" height="300"></canvas>
+    
+    <img src="Beetles/storm.png" alt="Storm" class="role-photo" onerror="this.style.display='none'">
+    
+    <div class="role-img-overlay"></div>
+  </div>
+  
+  <div class="art-status soon">Coming Soon</div>
+  
+  <div class="art-card-info">
+    <div class="art-role-tag r6">Role 06 · Elemental</div>
+    <h3>Storm</h3>
+    <p>Volatile shell, blinding debris, chaos catalyst.</p>
+  </div>
+</div>
+  </div>
+</section>
+
+<section id="gameplay">
+  <div style="margin-bottom:3rem;">
+    <span class="s-tag reveal">// Media Vault &middot; Gameplay & Art Updates</span>
+    <h2 class="s-title reveal">HOW IT <em>FEELS</em></h2>
+  </div>
+  
+  <div class="reveal" id="dynamic-media-grid"></div>
+</section>
+
+<section id="progress">
+  <span class="s-tag reveal">// Build Progress &middot; Alpha Status</span>
+  <h2 class="s-title reveal">WHAT'S <em>BUILT</em></h2>
+  <p class="reveal" style="margin-top:.8rem;font-size:1rem;color:var(--muted);">Real completion data from our internal build tracker. Updated every sprint.</p>
+  <div class="progress-grid reveal">
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">Core Movement</span><span class="prog-pct" data-pct="94">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="64"></div></div><div class="prog-status">&#9679; Sprint mechanic, six-leg posture shift &mdash; shipping</div></div>
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">Dung Roll Physics</span><span class="prog-pct" data-pct="78">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="15"></div></div><div class="prog-status">&#9679; Momentum overhaul v2 &mdash; in active tuning</div></div>
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">6 Beetle Design</span><span class="prog-pct" data-pct="88">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="25"></div></div><div class="prog-status">&#9679; Kits finalised &middot; balance pass ongoing</div></div>
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">Combat Mechanic</span><span class="prog-pct" data-pct="72">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="5"></div></div><div class="prog-status">&#9679; Radar system done &middot; Trapper mines in QA</div></div>
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">Dung Economy System</span><span class="prog-pct" data-pct="55">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="5"></div></div><div class="prog-status">&#9679; Cloak v2 in prototype &middot; shimmer FX pending</div></div>
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">Ability Integration</span><span class="prog-pct" data-pct="38">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="5"></div></div><div class="prog-status">&#9679; EMP prototype done &middot; arc visuals in progress</div></div>
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">Map Development</span><span class="prog-pct" data-pct="81">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="15"></div></div><div class="prog-status">&#9679; Turrets + walls done &middot; traps in QA</div></div>
+    <div class="prog-item"><div class="prog-corner tl"></div><div class="prog-corner br"></div><div class="prog-top"><span class="prog-name">Base Defense Setup</span><span class="prog-pct" data-pct="44">0%</span></div><div class="prog-bar-bg"><div class="prog-bar-fill" data-target="5"></div></div><div class="prog-status">&#9679; Layout v3 locked &middot; tileset in art pass</div></div>
+  </div>
+</section>
+
+<section id="countdown-section">
+  <div class="cd-header reveal">
+    <span class="s-tag" style="color:var(--green-neon);">// Closed Beta</span>
+    <div class="cd-title">BETA INVITE DROP</div>
+    <div class="cd-sub">Waitlist members get first access. Sign up on the main page.</div>
+  </div>
+  <div class="cd-grid reveal">
+    <div class="cd-unit"><div class="cd-num" id="cd-d">00</div><div class="cd-label">Days</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-h">00</div><div class="cd-label">Hours</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-m">00</div><div class="cd-label">Minutes</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-s">00</div><div class="cd-label">Seconds</div></div>
+  </div>
+  <div class="cd-note reveal">// Target: 18 September 2026 &middot; Date locked internally &middot; Announcement incoming</div>
+</section>
+
+<section id="community">
+  <div class="community-layout">
+    <div class="comm-canvas-wrap reveal-left">
+      <canvas id="comm-canvas" width="500" height="500"></canvas>
+      <div class="comm-corner tl"></div><div class="comm-corner tr"></div>
+      <div class="comm-corner bl"></div><div class="comm-corner br"></div>
+    </div>
+    <div class="comm-text reveal-right">
+      <span class="s-tag">// Join The Swarm</span>
+      <h2 class="s-title">JOIN THE<br><em>COMMUNITY</em></h2>
+      <p>We build this game with the community. Playtester feedback has already reshaped <strong>Dung Roll physics, Stealth balance, and the base defense economy</strong>.</p>
+      <p>Jump into Discord. Share ideas. Call our Trapper broken. We're listening.</p>
+      <!-- COMMUNITY SECTION -->
+<div class="social-links">
+  <a class="social-link" href="https://discord.gg/VxGkGjGh" target="_blank" rel="noopener noreferrer">
+    <div class="social-link-left">
+      <span class="social-icon"><i class="fa-brands fa-discord"></i></span>
+      <div><div class="social-name">Discord Server</div></div>
+    </div>
+    <span class="social-arrow">&#8594;</span>
+  </a>
+  <a class="social-link" href="#">
+    <div class="social-link-left">
+      <span class="social-icon"><i class="fa-brands fa-x-twitter"></i></span>
+      <div><div class="social-name">X</div><div class="social-desc">Dev thoughts · Art drops · Patch notes</div></div>
+    </div>
+    <span class="social-arrow">&#8594;</span>
+  </a>
+  <!-- ... rest of links ... -->
+</div>
+
+<!-- WIP FOOTER -->
+<div class="wip-footer">
+  <div class="footer-logo">DUNG BEETLES</div>
+  <ul class="footer-links">
+    <li><a href="index.html">Main Site</a></li>
+    <li><a href="index.html#cta">Waitlist</a></li>
+    <li><a href="https://discord.gg/VxGkGjGh" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i> Discord</a></li>
+    <li><a href="#">Press Kit</a></li>
+  </ul>
+  <div class="footer-copy">&#169; 2024 The Crazy Capitaan Studios · WIP Devlog</div>
+</div>
+
+<script>
+/* FIX 6: WIP HAMBURGER MENU */
+function toggleWipNav() {
+  const btn = document.getElementById('wip-hamburger');
+  const nav = document.getElementById('wip-mobile-nav');
+  btn.classList.toggle('open');
+  nav.classList.toggle('open');
+  document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+}
+function closeWipNav() {
+  document.getElementById('wip-hamburger').classList.remove('open');
+  document.getElementById('wip-mobile-nav').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* CURSOR */
+const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+if(!isTouch){
+  const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  (function ac(){cur.style.left=mx+'px';cur.style.top=my+'px';rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(ac);})();
+  document.addEventListener('mouseover',e=>{
+    if(e.target.matches('a,button,.art-card,.social-link,.uc-row,.prog-item,.log-entry')){cur.style.transform='translate(-50%,-50%) scale(2)';ring.style.transform='translate(-50%,-50%) scale(1.5)';ring.style.borderColor='var(--amber-glow)';}
+    else{cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';ring.style.borderColor='var(--amber)';}
+  });
+}
+
+/* HERO CANVAS */
+const HC=document.getElementById('hero-canvas'),HC2=HC.getContext('2d');
+function resH(){HC.width=innerWidth;HC.height=HC.parentElement.offsetHeight;}resH();window.addEventListener('resize',resH);
+const pts=Array.from({length:100},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,a:Math.random()*.5+.1,c:Math.random()>.5?'#d4870a':Math.random()>.5?'#aaff44':'#6b5c45'}));
+(function dH(){HC2.clearRect(0,0,HC.width,HC.height);pts.forEach((p,i)=>{pts.slice(i+1).forEach(q=>{const d=Math.hypot(p.x-q.x,p.y-q.y);if(d<100){HC2.save();HC2.globalAlpha=(1-d/100)*.07;HC2.strokeStyle='#d4870a';HC2.lineWidth=.5;HC2.beginPath();HC2.moveTo(p.x,p.y);HC2.lineTo(q.x,q.y);HC2.stroke();HC2.restore();}});HC2.save();HC2.globalAlpha=p.a;HC2.fillStyle=p.c;HC2.beginPath();HC2.arc(p.x,p.y,p.r,0,Math.PI*2);HC2.fill();HC2.restore();p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=HC.width;if(p.x>HC.width)p.x=0;if(p.y<0)p.y=HC.height;if(p.y>HC.height)p.y=0;});requestAnimationFrame(dH);})();
+
+/* HERO COUNTERS */
+document.getElementById('hc-days').textContent = Math.floor((Date.now() - new Date('2026-03-17T00:00:00+05:30')) / 864e5);
+let bc=0;(function cB(){if(bc<4){bc+=2;document.getElementById('hc-builds').textContent=bc;setTimeout(cB,18);}})();
+
+/* ROLE CANVASES */
+function drawRole(canvas,role){
+  const ctx=canvas.getContext('2d');
+  const photo = canvas.parentElement.querySelector('.role-photo'); // New line
+  const W=canvas.width,H=canvas.height;
+  const C={defender:{pri:'#d4870a',acc:'#aaff44',eye:'#aaff44',bg:'rgba(212,135,10,.07)'},attacker:{pri:'#ff6b35',acc:'#d4870a',eye:'#ff9966',bg:'rgba(255,107,53,.07)'},scout:{pri:'#aaff44',acc:'#7ec845',eye:'#ccff88',bg:'rgba(170,255,68,.06)'},trapper:{pri:'#c4a84a',acc:'#d4870a',eye:'#ffdd88',bg:'rgba(196,168,74,.07)'},stealth:{pri:'#6699bb',acc:'#aaddff',eye:'#99ccff',bg:'rgba(102,153,187,.06)'},storm:{pri:'#c466ff',acc:'#aaff44',eye:'#ddaaff',bg:'rgba(196,102,255,.08)'}}[role]||{pri:'#d4870a',acc:'#aaff44',eye:'#aaff44',bg:'rgba(212,135,10,.07)'};
+  let f=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#060402';ctx.fillRect(0,0,W,H);
+    const bg=ctx.createRadialGradient(W/2,H/2,20,W/2,H/2,140);bg.addColorStop(0,C.bg);bg.addColorStop(1,'transparent');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(212,135,10,.04)';ctx.lineWidth=1;for(let x=0;x<W;x+=24){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let y=0;y<H;y+=24){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    ctx.save();ctx.translate(W/2,H/2+Math.sin(f*.03)*4);
+    const g=ctx.createRadialGradient(0,0,5,0,0,70);g.addColorStop(0,C.bg);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,70,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#1e1208';ctx.strokeStyle=C.pri;ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(0,16,36,48,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    const sh=ctx.createLinearGradient(-24,-5,14,40);sh.addColorStop(0,C.bg);sh.addColorStop(1,'transparent');ctx.fillStyle=sh;ctx.beginPath();ctx.ellipse(0,16,36,48,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=C.pri+'44';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(0,60);ctx.stroke();
+    ctx.fillStyle='#2a1a08';ctx.strokeStyle=C.pri;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(0,-22,22,17,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#3a2510';ctx.beginPath();ctx.ellipse(0,-44,15,13,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.eye;ctx.shadowColor=C.eye;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(-7,-48,3.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(7,-48,3.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    const aw=Math.sin(f*.04)*6;ctx.strokeStyle=C.pri+'55';ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(-8,-54);ctx.quadraticCurveTo(-22-aw,-68,-16+aw,-80);ctx.stroke();ctx.beginPath();ctx.moveTo(8,-54);ctx.quadraticCurveTo(22+aw,-68,16-aw,-80);ctx.stroke();
+    const ls=Math.sin(f*.05)*7;ctx.strokeStyle=C.pri+'55';ctx.lineWidth=1.2;[[-30,-8,-50,-14+ls],[-30,6,-54,18-ls],[-30,22,-46,40+ls],[30,-8,50,-14-ls],[30,6,54,18+ls],[30,22,46,40-ls]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.fillStyle=C.pri+'44';ctx.beginPath();ctx.arc(x2,y2,2,0,Math.PI*2);ctx.fill();});
+    if(role==='defender'){ctx.strokeStyle=C.pri;ctx.fillStyle='rgba(212,135,10,.1)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-20,-5);ctx.lineTo(-40,-5);ctx.lineTo(-40,18);ctx.lineTo(-20,30);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle=C.pri;ctx.shadowColor=C.pri;ctx.shadowBlur=5;[[25,2],[29,14],[33,26]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();});ctx.shadowBlur=0;}
+    if(role==='attacker'){const lunge=Math.sin(f*.06)*6;ctx.strokeStyle=C.pri;ctx.lineWidth=2;[[-26,-10+lunge,-50,-22+lunge],[26,-10-lunge,50,-22-lunge]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.fillStyle=C.acc;ctx.beginPath();ctx.arc(x2,y2,4,0,Math.PI*2);ctx.fill();});ctx.strokeStyle='rgba(255,107,53,.15)';ctx.lineWidth=.8;for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(-60+i*5,-30+i*6);ctx.lineTo(-44+i*5,-18+i*6);ctx.stroke();}}
+    if(role==='scout'){const pr=(Math.sin(f*.07)+1)*.5;ctx.strokeStyle=C.pri;ctx.lineWidth=1.2;ctx.shadowColor=C.pri;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(30,-8,16,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;ctx.globalAlpha=pr*.5;ctx.beginPath();ctx.arc(30,-8,16+pr*8,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;const sa=f*.05;ctx.strokeStyle=C.pri+'77';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(30,-8);ctx.lineTo(30+Math.cos(sa)*16,-8+Math.sin(sa)*16);ctx.stroke();ctx.fillStyle=C.acc;ctx.shadowColor=C.acc;ctx.shadowBlur=6;ctx.beginPath();ctx.arc(30,-8,4,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
+    if(role==='trapper'){ctx.strokeStyle=C.pri;ctx.lineWidth=1.5;[[-28,18,-46,34],[28,18,46,34]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});ctx.strokeStyle=C.pri;ctx.lineWidth=1;[[-46,34,-42,26,-38,34,-34,26,-30,34],[46,34,42,26,38,34,34,26,30,34]].forEach(ptt=>{ctx.beginPath();for(let i=0;i<ptt.length;i+=2){i===0?ctx.moveTo(ptt[i],ptt[i+1]):ctx.lineTo(ptt[i],ptt[i+1]);}ctx.stroke();});const mp=(Math.sin(f*.06)+1)*.5;ctx.fillStyle=C.pri;ctx.shadowColor=C.pri;ctx.shadowBlur=4+mp*10;ctx.beginPath();ctx.arc(0,52,5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
+    if(role==='stealth'){const spa=Math.sin(f*.03)*.35+.65;ctx.globalAlpha=spa;const cl=ctx.createRadialGradient(0,16,0,0,16,56);cl.addColorStop(0,'rgba(102,153,187,.25)');cl.addColorStop(.7,'rgba(102,153,187,.08)');cl.addColorStop(1,'transparent');ctx.fillStyle=cl;ctx.beginPath();ctx.ellipse(0,16,50,64,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;for(let i=0;i<6;i++){const a=f*.025+i*1.05,r=42+i*3,px=Math.cos(a)*r*.75,py=Math.sin(a)*r*.4+16,pp=(Math.sin(f*.06+i)+1)*.5;ctx.fillStyle=C.acc;ctx.globalAlpha=pp*.45;ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}}
+    if(role==='storm'){ctx.strokeStyle=C.pri;ctx.lineWidth=1.5;ctx.shadowColor=C.pri;ctx.shadowBlur=10;function arc(sx,sy,ex,ey){const ps=[];for(let t2=0;t2<=1;t2+=.25)ps.push({x:sx+(ex-sx)*t2+(Math.random()-.5)*12,y:sy+(ey-sy)*t2+(Math.random()-.5)*12});ctx.beginPath();ctx.moveTo(sx,sy);ps.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(ex,ey);ctx.stroke();}arc(-34,-12,-20,4);arc(34,-12,20,4);arc(-20,4,0,20);arc(20,4,0,20);ctx.shadowBlur=0;const pr=(f%50)/50;ctx.strokeStyle=C.pri;ctx.globalAlpha=(1-pr)*.4;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,12,24+pr*22,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle=C.pri;ctx.shadowColor=C.pri;ctx.shadowBlur=20;ctx.beginPath();ctx.arc(0,12,7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
+    ctx.restore();f++;requestAnimationFrame(draw);
+  }
+  draw();
+}
+document.querySelectorAll('.role-canvas').forEach(c=>drawRole(c,c.dataset.role));
+
+/* ─── COMMUNITY CANVAS ─── */
+(function(){
+  const c=document.getElementById('comm-canvas'),ctx=c.getContext('2d'),W=c.width,H=c.height;let t=0;
+
+  // 200 particles. Math.pow keeps them dense near the inner ring, fading out toward the edges.
+  const swarm=Array.from({length:120},(_,i)=>({
+    col: i<60 ? '#4488ff' : '#ff4444', // 100 Blue, 100 Red
+    phase: Math.random()*Math.PI*2,
+    // Minimum radius of 65 (hollow core), spreading out an additional 150 pixels
+    baseR: 65 + Math.pow(Math.random(), 2) * 150, 
+    angle: Math.random()*Math.PI*2,
+    speed: (Math.random()*0.012 + 0.002) * (Math.random()>0.5?1:-1)
+  }));
+
+  function draw(){
+    ctx.fillStyle='#060402';ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(212,135,10,.04)';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=25){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=25){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    // Core light glow
+    const cg=ctx.createRadialGradient(W/2,H/2,10,W/2,H/2,70);
+    cg.addColorStop(0,'rgba(212,135,10,.5)');cg.addColorStop(.5,'rgba(212,135,10,.15)');cg.addColorStop(1,'transparent');
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(W/2,H/2,70,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(212,135,10,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(W/2,H/2,34,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#d4870a';ctx.shadowColor='#d4870a';ctx.shadowBlur=12;ctx.beginPath();ctx.arc(W/2,H/2,14,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+
+    swarm.forEach((b)=>{
+      b.angle += b.speed;
+      const r = b.baseR + Math.sin(t*.03 + b.phase)*6; // organic wobble
+      b.x = W/2 + Math.cos(b.angle)*r;
+      b.y = H/2 + Math.sin(b.angle)*r*.65; // flattened oval shape
+
+      // Fade out effect based on distance from the core. 
+      // dist starts around 65. Fades out completely as it reaches the outer edge.
+      const dist = Math.hypot(b.x - W/2, b.y - H/2);
+      ctx.globalAlpha = Math.max(0.02, 1 - ((dist - 50) / 140));
+
+      // Draw smaller particle (radius 2.5 instead of 5)
+      ctx.fillStyle=b.col; ctx.shadowColor=b.col; ctx.shadowBlur=4;
+      ctx.beginPath();ctx.arc(b.x,b.y,2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+
+      // Draw smaller legs (length 4 instead of 9)
+      const la = b.angle + Math.PI/2;
+      for(let leg=0;leg<3;leg++){
+        const la2 = la + leg*(Math.PI/3) + Math.sin(t*.12+leg)*.3;
+        ctx.strokeStyle=b.col; ctx.lineWidth=0.6; // thinner legs
+        ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+Math.cos(la2)*4,b.y+Math.sin(la2)*4);ctx.stroke();
+      }
+      ctx.globalAlpha = 1; // reset alpha for the next drawing
+    });
+
+    // Center text box
+    ctx.fillStyle='rgba(6,4,2,.75)';ctx.fillRect(W/2-44,H/2-8,88,18);
+    ctx.fillStyle='#d4870a';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('THE SWARM',W/2,H/2+4);
+    t++;requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── DEVLOG EXPAND/COLLAPSE FEATURE ─── */
+function toggleDevlog() {
+  const feed = document.getElementById('devlog-feed');
+  const fade = document.getElementById('feed-fade');
+  const btn = document.getElementById('expand-btn');
+  
+  if (feed.classList.contains('expanded')) {
+    // Action: COLLAPSE
+    feed.classList.remove('expanded');
+    fade.classList.remove('hidden');
+    // Change text back to 'Show More' with a Down Arrow
+    btn.innerHTML = 'Show More <span class="bounce-arrow">&#8595;</span>';
+    
+    // UX Polish: Smoothly scroll the user back to the top of the Devlog section
+    // so they aren't left staring at an empty space when the box shrinks!
+    document.getElementById('devlog').scrollIntoView({ behavior: 'smooth' });
+    
+  } else {
+    // Action: EXPAND
+    feed.classList.add('expanded');
+    fade.classList.add('hidden');
+    // Change text to 'Show Less' with an Up Arrow
+    btn.innerHTML = 'Show Less <span class="bounce-arrow">&#8593;</span>';
+  }
+}
+
+/* ─── COUNTDOWN ─── */
+(function(){
+  // Locked to June 4, 2026 at 12:00 PM IST
+  const target = new Date('2026-09-18T12:00:00+05:30');
+  
+  // Track previous numbers so we only flip the ones that change
+  let prev = { d: -1, h: -1, m: -1, s: -1 };
+
+  function updateFlip(id, currentVal, prevVal) {
+    const el = document.getElementById(id);
+    if (currentVal !== prevVal) {
+      // 1. Trigger the physical flip animation FIRST
+      el.classList.remove('flip-anim');
+      void el.offsetWidth; // Forces the browser to reset the animation
+      el.classList.add('flip-anim');
+      
+      // 2. Wait exactly 250ms (half the animation) until the tile is invisible edge-on, 
+      // THEN swap the number secretly before it flips back down.
+      setTimeout(() => {
+        el.textContent = String(currentVal).padStart(2, '0');
+      }, 250); 
+    }
+  }
+
+  function tick() {
+    const diff = Math.max(0, target - Date.now());
+    const d = Math.floor(diff / 864e5);
+    const h = Math.floor((diff % 864e5) / 36e5);
+    const m = Math.floor((diff % 36e5) / 6e4);
+    const s = Math.floor((diff % 6e4) / 1e3);
+
+    // Update and animate only the tiles that changed
+    updateFlip('cd-d', d, prev.d);
+    updateFlip('cd-h', h, prev.h);
+    updateFlip('cd-m', m, prev.m);
+    updateFlip('cd-s', s, prev.s);
+
+    // Save the current numbers for the next second's comparison
+    prev = { d, h, m, s };
+  }
+  
+  tick();
+  setInterval(tick, 1000);
+})();
+
+/* PROGRESS BARS */
+const pObs=new IntersectionObserver(entries=>{entries.forEach(e=>{const fill=e.target.querySelector('.prog-bar-fill'),pct=e.target.querySelector('.prog-pct'),tgt=parseInt(fill.dataset.target);if(e.isIntersecting){let cur=0;(function step(){if(cur<tgt){cur+=1.5;fill.style.width=cur+'%';pct.textContent=Math.floor(cur)+'%';requestAnimationFrame(step);}else{fill.style.width=tgt+'%';pct.textContent=tgt+'%';}})();}else{fill.style.width='0%';pct.textContent='0%';}});},{threshold:.3});
+document.querySelectorAll('.prog-item').forEach(p=>pObs.observe(p));
+
+/* SCROLL REVEAL */
+const rObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');else e.target.classList.remove('vis');});},{threshold:.1,rootMargin:'0px 0px -20px 0px'});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>rObs.observe(el));
+
+/* SCROLL EFFECTS (Nav Shrink & Hero Scroll Hint) */
+window.addEventListener('scroll', () => {
+    // 1. Nav Shrink
+    document.querySelector('nav').style.padding = window.scrollY > 60 ? '.8rem 3rem' : '1.1rem 3rem';
+    
+    // 2. Scroll Hint Fade Out
+    const scrollHint = document.querySelector('.scroll-hint');
+    if (scrollHint) {
+        if (window.scrollY > 20) {
+            scrollHint.classList.add('hidden'); // Fades out when you scroll down
+        } else {
+            scrollHint.classList.remove('hidden'); // Fades back in at the very top
+        }
+    }
+}, {passive:true});
+
+/* DYNAMIC CONTENT GENERATION (From wip-content.js) */
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Render Slideshow
+    const mediaGrid = document.getElementById('dynamic-media-grid');
+    if (typeof WIP_CONTENT !== 'undefined' && WIP_CONTENT.length > 0) {
+        const DURATION = 5000;
+        let current = 0;
+        let paused = false;
+        let autoTimer = null;
+        let progressStart = null;
+        let progressElapsed = 0;
+        let progressRaf = null;
+
+        const pad = n => String(n).padStart(2, '0');
+
+        // Build slideshow HTML
+        mediaGrid.innerHTML = `
+          <div class="slideshow-outer" id="slideshow-wrap">
+            <div class="slide-main">
+              ${WIP_CONTENT.map((item, i) => `
+                <div class="slide-item ${i === 0 ? 'active' : ''}" data-i="${i}">
+                  ${item.type === 'video'
+                    ? `<video src="${item.file}" autoplay loop muted playsinline></video>`
+                    : `<img src="${item.file}" alt="${item.title}" loading="lazy" />`}
+                </div>`).join('')}
+              <div class="slide-info-overlay" id="slide-info">
+                <div class="slide-tag">// ${WIP_CONTENT[0].tag || 'update'}</div>
+                <div class="slide-title">${WIP_CONTENT[0].title}</div>
+                <div class="slide-desc">${WIP_CONTENT[0].desc}</div>
+              </div>
+              <div class="slide-counter" id="slide-ctr">${pad(1)} / ${pad(WIP_CONTENT.length)}</div>
+              <div class="slide-pause-badge">&#9646;&#9646; PAUSED</div>
+              <button class="slide-btn prev" id="slide-prev" aria-label="Previous">&#8592;</button>
+              <button class="slide-btn next" id="slide-next" aria-label="Next">&#8594;</button>
+              <div class="slide-progress"><div class="slide-progress-fill" id="slide-fill"></div></div>
+            </div>
+            <div class="slide-thumbs" id="slide-thumbs">
+              ${WIP_CONTENT.map((item, i) => `
+                <div class="slide-thumb ${i === 0 ? 'active' : ''}" data-i="${i}">
+                  ${item.type === 'video'
+                    ? `<video src="${item.file}" muted preload="metadata"></video>`
+                    : `<img src="${item.file}" alt="" loading="lazy" />`}
+                  <div class="slide-thumb-num">${pad(i + 1)}</div>
+                </div>`).join('')}
+            </div>
+          </div>`;
+
+        const fill = document.getElementById('slide-fill');
+        const info = document.getElementById('slide-info');
+        const ctr  = document.getElementById('slide-ctr');
+        const items = document.querySelectorAll('.slide-item');
+        const thumbs = document.querySelectorAll('.slide-thumb');
+        const wrap  = document.getElementById('slideshow-wrap');
+
+        function updateInfo(idx) {
+            const item = WIP_CONTENT[idx];
+            info.innerHTML = `
+              <div class="slide-tag">// ${item.tag || 'update'}</div>
+              <div class="slide-title">${item.title}</div>
+              <div class="slide-desc">${item.desc}</div>`;
+            ctr.textContent = `${pad(idx + 1)} / ${pad(WIP_CONTENT.length)}`;
+        }
+
+        function goTo(idx) {
+            idx = ((idx % WIP_CONTENT.length) + WIP_CONTENT.length) % WIP_CONTENT.length;
+            items[current].classList.remove('active');
+            thumbs[current].classList.remove('active');
+            current = idx;
+            items[current].classList.add('active');
+            thumbs[current].classList.add('active');
+            updateInfo(current);
+            
+            // NEW FIX: Manually calculate horizontal scroll for the thumbnail strip 
+            // so it never hijacks the vertical page scroll!
+            const thumbContainer = document.getElementById('slide-thumbs');
+            const activeThumb = thumbs[current];
+            const scrollPos = activeThumb.offsetLeft - (thumbContainer.clientWidth / 2) + (activeThumb.clientWidth / 2);
+            thumbContainer.scrollTo({ left: scrollPos, behavior: 'smooth' });
+            
+            resetProgress();
+        }
+
+        // Progress bar animation
+        function startProgress() {
+            cancelAnimationFrame(progressRaf);
+            progressStart = performance.now() - progressElapsed;
+            function tick(now) {
+                if (paused) return;
+                const elapsed = now - progressStart;
+                const pct = Math.min(elapsed / DURATION * 100, 100);
+                fill.style.width = pct + '%';
+                if (pct < 100) progressRaf = requestAnimationFrame(tick);
+                else { progressElapsed = 0; goTo(current + 1); }
+            }
+            progressRaf = requestAnimationFrame(tick);
+        }
+
+        function pauseProgress(now) {
+            cancelAnimationFrame(progressRaf);
+            progressElapsed = now - progressStart;
+            fill.style.width = (Math.min(progressElapsed / DURATION * 100, 100)) + '%';
+        }
+
+        function resetProgress() {
+            cancelAnimationFrame(progressRaf);
+            progressElapsed = 0;
+            fill.style.transition = 'none';
+            fill.style.width = '0%';
+            if (!paused) startProgress();
+        }
+
+        // DESKTOP: Pause on hover, resume on leave
+        if (!isTouch) {
+            wrap.addEventListener('mouseenter', () => { paused = true; pauseProgress(performance.now()); });
+            wrap.addEventListener('mouseleave', () => { paused = false; startProgress(); });
+        }
+
+        // Nav buttons
+        document.getElementById('slide-prev').addEventListener('click', e => { e.stopPropagation(); goTo(current - 1); });
+        document.getElementById('slide-next').addEventListener('click', e => { e.stopPropagation(); goTo(current + 1); });
+
+        // Thumbnail clicks
+        document.querySelectorAll('.slide-thumb').forEach(t => {
+            t.addEventListener('click', e => { e.stopPropagation(); goTo(parseInt(t.dataset.i)); });
+        });
+
+        // Keyboard arrows (when section is in view)
+        document.addEventListener('keydown', e => {
+            const rect = wrap.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+                if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
+            }
+        });
+
+        // MOBILE: swipe to navigate, tap main area to toggle pause/resume
+        let touchX = null, touchY = null;
+        const slidePauseBadge = wrap.querySelector('.slide-pause-badge');
+
+        function showPausedState() {
+            if (slidePauseBadge) { slidePauseBadge.style.opacity = '1'; slidePauseBadge.textContent = '⏸ PAUSED — TAP TO RESUME'; }
+        }
+        function hidePausedState() {
+            if (slidePauseBadge) { slidePauseBadge.style.opacity = '0'; }
+        }
+
+        wrap.addEventListener('touchstart', e => {
+            touchX = e.touches[0].clientX;
+            touchY = e.touches[0].clientY;
+        }, { passive: true });
+
+        wrap.addEventListener('touchend', e => {
+            if (touchX === null) return;
+            const dx = e.changedTouches[0].clientX - touchX;
+            const dy = e.changedTouches[0].clientY - touchY;
+            // Swipe gesture: horizontal > 40px and more horizontal than vertical
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+                goTo(current + (dx < 0 ? 1 : -1));
+            } else if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+                // Pure tap (no movement) → toggle pause
+                if (paused) {
+                    paused = false;
+                    hidePausedState();
+                    startProgress();
+                } else {
+                    paused = true;
+                    pauseProgress(performance.now());
+                    showPausedState();
+                }
+            }
+            touchX = null; touchY = null;
+        });
+
+        resetProgress();
+
+    } else {
+        mediaGrid.innerHTML = `<div style="padding:2.5rem;color:var(--muted);font-family:'Share Tech Mono',monospace;border:1px dashed var(--border2);text-align:center;">// Awaiting uploads in wip-content.js</div>`;
+    }
+
+// 2. Render Upcoming Features
+    const upcomingGrid = document.getElementById('dynamic-upcoming-grid');
+    
+    // We override the external file here to directly inject the May 2026 milestones
+    const UPCOMING_FEATURES = [
+      { 
+        eta: "10 May 2026", 
+        title: "Dung Roll Mechanic V1", 
+        desc: "Implementing the core momentum physics. Rectifying initial collision bugs and ensuring the 'Carrier State' feels heavy but responsive." 
+      },
+      { 
+        eta: "15 May 2026", 
+        title: "First Playable Prototype", 
+        desc: "Stitching together the core loop. We will have a closed internal showcase where the game is finally running end-to-end on a test server." 
+      },
+      { 
+        eta: "30 May 2026", 
+        title: "Environment & Early Roster", 
+        desc: "Integrating the first pass of our 'Micro Battlefield' arena tileset alongside the early 3D blockouts of the primary beetle roles." 
+      }
+    ];
+
+    if (UPCOMING_FEATURES.length > 0) {
+        upcomingGrid.innerHTML = UPCOMING_FEATURES.map(item => {
+            // Give 2026 dates 'active' styling, 2026 'planning' styling
+            const isActive = item.eta.includes('2026');
+            const statusClass = isActive ? 'active' : 'planning';
+            const statusText = isActive ? 'Active' : 'Planning';
+
+            return `
+            <div class="uc-row">
+                <div class="uc-eta">${item.eta}</div>
+                <div class="uc-info">
+                    <h3>${item.title}</h3>
+                    <p>${item.desc}</p>
+                </div>
+                <div class="uc-status ${statusClass}">${statusText}</div>
+            </div>`;
+        }).join('');
+    }
+});
+</script>
+
+<div id="google_translate_element"></div>
+
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en', 
+      includedLanguages: 'en,ja', // Only allow English and Japanese
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+
+  function changeLanguage(langCode) {
+    // 1. Update our custom button UI
+    document.getElementById('lang-en').classList.remove('active');
+    document.getElementById('lang-ja').classList.remove('active');
+    document.getElementById('lang-' + langCode).classList.add('active');
+
+    // 2. Aggressively trigger the hidden Google dropdown
+    const selectField = document.querySelector(".goog-te-combo");
+    if (selectField) {
+      selectField.value = langCode;
+      selectField.dispatchEvent(new Event('change', { bubbles: true, cancelable: true })); 
+      
+      // FIX: The 50ms delay "double-taps" it to guarantee a 1-click instant change.
+      setTimeout(() => {
+        if(selectField.value !== langCode) selectField.value = langCode;
+        selectField.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+      }, 50);
+    }
+  }
+</script>
+
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>

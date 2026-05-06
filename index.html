@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DUNG BEETLES — Micro Battlefield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #060402; --bg2: #0d0a06; --amber: #d4870a; --amber-glow: #f5a623;
+      --green: #7ec845; --green-neon: #aaff44; --dirt: #3a2510; --mud: #1e1208;
+      --text: #e8dcc8; --muted: #6b5c45; --white: #fff8ee;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; overflow-x: hidden; }
+
+    /* CURSOR — hidden on touch devices via media query */
+    @media (hover: none), (pointer: coarse) {
+      #cursor, #cursor-ring { display: none !important; }
+      body { cursor: auto !important; }
+    }
+    body { cursor: none; }
+    #cursor {
+      position: fixed; width: 12px; height: 12px; background: var(--amber-glow);
+      border-radius: 50%; pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%); transition: transform .1s, width .2s, height .2s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed; width: 36px; height: 36px; border: 1.5px solid var(--amber);
+      border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%);
+      transition: transform .18s ease, width .25s, height .25s, border-color .2s; opacity: .6;
+    }
+
+    /* NOISE */
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .035; pointer-events: none; z-index: 9000;
+    }
+   /* TRANSLATION TOGGLE */
+    .lang-toggle { display: flex; align-items: center; border: 1px solid rgba(212,135,10,.3); margin-right: 1rem; }
+    .lang-btn { font-family: 'Share Tech Mono', monospace; font-size: .65rem; padding: .4rem .7rem; cursor: pointer; color: var(--muted); transition: all .2s; }
+    .lang-btn.active { background: rgba(212,135,10,.15); color: var(--amber-glow); }
+    .lang-btn:hover:not(.active) { color: var(--white); background: rgba(212,135,10,.05); }
+    
+   /* HIDE DEFAULT GOOGLE TRANSLATE JUNK (NUKE FROM ORBIT) */
+    .goog-te-banner-frame,
+    .goog-te-banner-frame.skiptranslate,
+    iframe.goog-te-banner-frame,
+    iframe[name="goog-te-banner-frame"],
+    .skiptranslate > iframe { 
+        display: none !important; 
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+    }
+    body { 
+        top: 0px !important; 
+        position: static !important; 
+        transform: none !important;
+    }
+    .goog-tooltip { display: none !important; }
+    .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+    #google_translate_element { display: none !important; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 3rem;
+      backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(6,4,2,.7);
+      border-bottom: 1px solid rgba(212,135,10,.12);
+      transition: padding .3s, border-color .3s;
+    }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: .12em; color: var(--amber-glow); text-decoration: none; }
+    .nav-logo span { color: var(--green-neon); }
+    .nav-links { display: flex; gap: 2.4rem; list-style: none; }
+    .nav-links a { font-family: 'Share Tech Mono', monospace; font-size: .78rem; letter-spacing: .18em; color: var(--muted); text-decoration: none; text-transform: uppercase; transition: color .25s; }
+    .nav-links a:hover { color: var(--amber-glow); }
+    .nav-right { display: flex; align-items: center; gap: .8rem; }
+    .nav-wip {
+      background: transparent; border: 1px solid rgba(170,255,68,.35);
+      color: var(--green-neon); font-family: 'Share Tech Mono', monospace;
+      font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+      padding: .55rem 1.2rem; cursor: none; transition: background .25s, color .25s, border-color .25s;
+      position: relative; overflow: hidden;
+    }
+    .nav-wip::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(170,255,68,.1), transparent);
+      animation: shimmer 2.5s infinite;
+    }
+    .nav-wip:hover { background: rgba(170,255,68,.12); border-color: var(--green-neon); }
+    .nav-cta {
+      background: transparent; border: 1px solid var(--amber); color: var(--amber-glow);
+      font-family: 'Share Tech Mono', monospace; font-size: .72rem; letter-spacing: .2em;
+      text-transform: uppercase; padding: .55rem 1.4rem; cursor: none;
+      transition: background .25s, color .25s;
+    }
+    .nav-cta:hover { background: var(--amber); color: var(--bg); }
+
+    /* HERO */
+    #hero { 
+  position: relative; 
+  height: 100vh; 
+  min-height: 740px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  overflow: hidden;
+  /* Add your background image here */
+  background-image: url('Elements/TitleBG.jpeg'); 
+  background-size: cover;
+  background-position: center 40%;
+}
+
+/* This creates the faded center effect */
+#hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* rgba(6, 4, 2, 0.7) is your background color at 70% opacity.
+     The 'transparent' ends ensure the image is fully visible at the far left/right.
+  */
+background: linear-gradient(to right, 
+    transparent 0%, 
+    rgba(6, 4, 2, 0.9) 35%, 
+    rgba(6, 4, 2, 0.9) 65%, 
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+    #hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .hero-bg-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 50% 60%, rgba(212,135,10,.18) 0%, transparent 70%); pointer-events: none; }
+    .hero-content { 
+  position: relative; 
+  z-index: 2; /* Keeps text above the fade effect */
+  text-align: center; 
+  padding: 0 2rem 6rem; 
+}
+    .hero-eyebrow { font-family: 'Share Tech Mono', monospace; font-size: .72rem; letter-spacing: .45em; color: var(--green-neon); text-transform: uppercase; opacity: 0; animation: fadeUp .8s .3s forwards; }
+    .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(5rem, 13vw, 13rem); line-height: .88; letter-spacing: -.01em; color: var(--white); text-shadow: 0 0 80px rgba(212,135,10,.35); opacity: 0; animation: fadeUp .9s .5s forwards; }
+    .hero-title .line2 { color: transparent; -webkit-text-stroke: 1.5px var(--amber); }
+    .hero-subtitle { margin-top: 1.6rem; font-size: 1.15rem; font-weight: 400; color: var(--muted); max-width: 520px; margin-inline: auto; line-height: 1.55; opacity: 0; animation: fadeUp .9s .7s forwards; }
+    .hero-actions { margin-top: 2.6rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; opacity: 0; animation: fadeUp .9s .9s forwards; }
+    .btn-primary { background: var(--amber); color: var(--bg); font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: .18em; padding: .85rem 2.6rem; border: none; cursor: none; clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%); transition: background .25s, box-shadow .25s; text-transform: uppercase; }
+    .btn-primary:hover { background: var(--amber-glow); box-shadow: 0 0 40px rgba(245,166,35,.5); }
+    .btn-ghost { background: transparent; color: var(--text); font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: .18em; padding: .85rem 2.6rem; border: 1px solid rgba(232,220,200,.25); cursor: none; clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%); transition: border-color .25s, color .25s; text-transform: uppercase; }
+    .btn-ghost:hover { border-color: var(--text); }
+    .hero-scroll-hint { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .5rem; opacity: 0; animation: fadeUp 1s 1.2s forwards; transition: opacity 0.4s ease; }
+    .hero-scroll-hint.hidden { opacity: 0 !important; pointer-events: none; }
+    .hero-scroll-hint span { font-family: 'Share Tech Mono', monospace; font-size: .92rem; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; }
+    .scroll-line { width: 1px; height: 48px; background: linear-gradient(to bottom, var(--amber), transparent); animation: scrollPulse 2s infinite; }
+
+    /* MARQUEE */
+    .marquee-wrap { overflow: hidden; border-top: 1px solid rgba(212,135,10,.15); border-bottom: 1px solid rgba(212,135,10,.15); padding: .8rem 0; background: var(--mud); }
+    .marquee-track { display: flex; gap: 3rem; animation: marquee 22s linear infinite; white-space: nowrap; width: max-content; will-change: transform; -webkit-transform: translateZ(0); transform: translateZ(0); }
+    .marquee-track span { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .25em; color: var(--muted); }
+    .marquee-track span.accent { color: var(--amber); }
+    @keyframes marquee { 0% { -webkit-transform: translateX(0); transform: translateX(0); } 100% { -webkit-transform: translateX(-50%); transform: translateX(-50%); } }
+
+    /* SECTIONS */
+    /* --- GAMEPLAY SLIDESHOW (Imported from DIP) --- */
+    #gameplay { background: var(--bg2); }
+    .slideshow-outer { position: relative; border: 1px solid rgba(212,135,10,.14); border-radius: 2px; transition: border-color .4s, box-shadow .5s; }
+    .slideshow-outer:hover { border-color: var(--amber); box-shadow: 0 0 28px rgba(212,135,10,.4), 0 0 70px rgba(212,135,10,.14), inset 0 0 40px rgba(212,135,10,.04); }
+    .slide-main { position: relative; aspect-ratio: 16/9; background: #060402; overflow: hidden; }
+    .slide-item { position: absolute; inset: 0; opacity: 0; transition: opacity .65s ease, transform .65s ease; transform: scale(1.04); z-index: 1; }
+    .slide-item.active { opacity: 1; transform: scale(1); z-index: 2; }
+    .slide-item img, .slide-item video { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .5s ease; background: #060402; }
+    .slideshow-outer:hover .slide-item.active img, .slideshow-outer:hover .slide-item.active video { transform: scale(1.035); }
+    .slide-info-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(6,4,2,.96) 0%, rgba(6,4,2,.4) 60%, transparent 100%); padding: 4rem 2rem 1.6rem; z-index: 3; pointer-events: none; }
+    .slide-tag { font-family: 'Share Tech Mono', monospace; font-size: .6rem; letter-spacing: .28em; color: var(--amber); text-transform: uppercase; margin-bottom: .4rem; }
+    .slide-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: .06em; color: var(--white); }
+    .slide-desc { font-size: .88rem; color: var(--muted); margin-top: .3rem; }
+    .slide-counter { position: absolute; top: 1rem; right: 1rem; font-family: 'Share Tech Mono', monospace; font-size: .62rem; letter-spacing: .2em; color: var(--muted); background: rgba(6,4,2,.8); border: 1px solid rgba(212,135,10,.14); padding: .35rem .8rem; z-index: 4; }
+    .slide-pause-badge { position: absolute; top: 1rem; left: 1rem; font-family: 'Share Tech Mono', monospace; font-size: .55rem; letter-spacing: .22em; color: var(--amber); background: rgba(6,4,2,.82); border: 1px solid rgba(212,135,10,.35); padding: .32rem .7rem; z-index: 4; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    @media(hover:hover){ .slideshow-outer:hover .slide-pause-badge { opacity: 1; } }
+    .slide-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(212,135,10,.1); z-index: 5; }
+    .slide-progress-fill { height: 100%; background: linear-gradient(to right, var(--amber), var(--green-neon)); width: 0%; }
+    .slide-btn { position: absolute; top: 50%; transform: translateY(-50%); z-index: 4; font-family: 'Share Tech Mono', monospace; font-size: .85rem; color: var(--muted); background: rgba(6,4,2,.75); border: 1px solid rgba(212,135,10,.14); width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; cursor: none; transition: color .2s, border-color .2s, box-shadow .2s, background .2s; }
+    .slide-btn:hover { color: var(--amber-glow); border-color: var(--amber); box-shadow: 0 0 14px rgba(212,135,10,.4); background: rgba(6,4,2,.92); }
+    .slide-btn.prev { left: 1.2rem; }
+    .slide-btn.next { right: 1.2rem; }
+    .slide-thumbs { display: flex; gap: 2px; background: rgba(212,135,10,.05); overflow-x: auto; scrollbar-width: none; padding: 2px; }
+    .slide-thumbs::-webkit-scrollbar { display: none; }
+    .slide-thumb { flex: 0 0 130px; aspect-ratio: 16/9; position: relative; overflow: hidden; cursor: none; border: 1px solid transparent; opacity: .45; transition: opacity .3s, border-color .3s, box-shadow .3s; }
+    .slide-thumb img, .slide-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    .slide-thumb:hover { opacity: .8; border-color: rgba(212,135,10,.4); }
+    .slide-thumb.active { opacity: 1; border-color: var(--amber); box-shadow: 0 0 12px rgba(212,135,10,.45); }
+    .slide-thumb-num { position: absolute; bottom: .3rem; left: .45rem; font-family: 'Share Tech Mono', monospace; font-size: .5rem; letter-spacing: .15em; color: rgba(232,220,200,.5); }
+    
+    @media (max-width: 700px) {
+      .slide-thumb { flex: 0 0 90px; }
+      .slide-title { font-size: 1.5rem; }
+      .slide-btn { width: 38px; height: 38px; }
+      .slide-tag, .slide-desc { display: none !important; }
+      .slide-info-overlay { padding-bottom: 0.6rem !important; }
+    }
+    section { padding: 7rem 5vw; }
+    .tag { font-family: 'Share Tech Mono', monospace; font-size: .68rem; letter-spacing: .35em; color: var(--green-neon); text-transform: uppercase; margin-bottom: 1rem; display: block; }
+    h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 6vw, 5.5rem); line-height: 1; letter-spacing: .02em; color: var(--white); }
+    h2 em { color: var(--amber-glow); font-style: normal; }
+
+    /* WORLD */
+    /* Forces the side-by-side layout on desktop */
+    /* The Main Container: Forces 2 columns on Desktop */
+    #world { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; /* Creates two equal halves (Left / Right) */
+      gap: 5rem; 
+      align-items: center; 
+    }
+
+    /* Left Side: The Beetle */
+    .world-visual { 
+      position: relative; 
+      width: 100%;
+      max-width: 480px; 
+      margin: 0 auto 0 0; /* Anchors the beetle strictly to the left */
+      aspect-ratio: 1; 
+      border: 1px solid rgba(212,135,10,.2); 
+    }
+
+    /* Right Side: The Text */
+    .world-text {
+      text-align: left; /* Ensures the text reads cleanly from left to right */
+    }
+    
+    .world-text h2 { margin-bottom: 1rem; }
+    
+    .world-text p { 
+      margin-top: 1.4rem; 
+      font-size: 1.08rem; 
+      font-weight: 400; 
+      line-height: 1.7; 
+      color: var(--muted); 
+      max-width: 480px; 
+    }
+    /* Ensures your new image fits perfectly inside the frame */
+    .world-image { 
+      width: 100%; 
+      height: 100%; 
+      display: block; 
+      object-fit: contain; /* Keeps the entire image visible without cropping */
+    }
+    .world-corner { position: absolute; width: 18px; height: 18px; border-color: var(--amber); border-style: solid; }
+    .world-corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .world-corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+    .world-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+    .world-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+    .world-text p { margin-top: 1.4rem; font-size: 1.08rem; font-weight: 400; line-height: 1.7; color: var(--muted); max-width: 480px; }
+    .world-text p strong { color: var(--text); font-weight: 600; }
+
+    /* STATS */
+    .stats-bar { background: var(--mud); border-top: 1px solid rgba(212,135,10,.12); border-bottom: 1px solid rgba(212,135,10,.12); display: flex; justify-content: center; }
+    .stat { flex: 1; text-align: center; padding: 2.5rem 1rem; border-right: 1px solid rgba(212,135,10,.1); transition: background .3s; }
+    .stat:last-child { border-right: none; }
+    .stat:hover { background: rgba(212,135,10,.06); }
+    .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 3.2rem; letter-spacing: .05em; color: var(--amber-glow); line-height: 1; }
+    .stat-label { font-family: 'Share Tech Mono', monospace; font-size: .64rem; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; margin-top: .4rem; }
+
+    /* CORE LOOP — Expandable Accordion */
+    #loop { background: var(--bg2); }
+    .loop-header { margin-bottom: 3rem; }
+
+    .loop-accordion {
+      display: flex;
+      height: 280px; /* Reduced to your red line */
+      gap: 1.5px;
+      background: rgba(212,135,10,.1);
+      transition: height .6s cubic-bezier(.4,0,.2,1);
+    }
+    
+    /* Triggers the full height expansion */
+    .loop-accordion.is-expanded {
+      height: 520px; 
+    }
+
+    /* Styling for the new descriptions in the idle view */
+    .lp-desc-idle {
+      margin-top: 1rem;
+      font-size: .88rem;
+      line-height: 1.6;
+      color: rgba(107,92,69,.7);
+      transition: color .3s;
+      padding-right: 1rem;
+    }
+    .loop-panel:not(.is-active):hover .lp-desc-idle {
+      color: var(--muted);
+    }
+
+    /* Each panel */
+    .loop-panel {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      cursor: none;
+      background: var(--bg2);
+      transition: flex .6s cubic-bezier(.4,0,.2,1);
+    }
+    .loop-panel.is-active { flex: 4.5; }
+
+/* Video or Image fills the panel */
+    .lp-video, .lp-image {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity .55s ease;
+      pointer-events: none;
+    }
+    .loop-panel.is-active .lp-video,
+    .loop-panel.is-active .lp-image { opacity: 1; }
+
+/* 1. Darken the gradient overlay so text has a solid backdrop */
+    .lp-scrim {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(6,4,2,0.98) 0%, rgba(6,4,2,0.8) 45%, rgba(6,4,2,0.1) 100%);
+      opacity: 0;
+      transition: opacity .55s ease;
+      z-index: 1;
+    }
+    .loop-panel.is-active .lp-scrim { opacity: 1; }
+
+    /* Amber top-bar indicator — slides in from left when active */
+    .lp-top-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, var(--amber), var(--amber-glow));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .55s cubic-bezier(.4,0,.2,1);
+      z-index: 4;
+    }
+    .loop-panel.is-active .lp-top-bar { transform: scaleX(1); }
+
+    /* Idle content (number + title, always visible in collapsed state) */
+    .lp-idle {
+      position: absolute; inset: 0;
+      padding: 2rem 1.8rem;
+      display: flex; flex-direction: column;
+      z-index: 2;
+      transition: opacity .3s ease;
+    }
+    .loop-panel.is-active .lp-idle { opacity: 0; pointer-events: none; }
+
+    /* Small top bar on plain hover (not active) */
+    .lp-idle::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--amber);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform .4s ease;
+    }
+    .loop-panel:not(.is-active):hover .lp-idle::before { transform: scaleX(1); }
+
+    .lp-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4.5rem;
+      color: rgba(212,135,10,.12);
+      line-height: 1; margin-bottom: .5rem;
+      white-space: nowrap;
+      transition: color .3s;
+    }
+    .loop-panel:not(.is-active):hover .lp-num { color: rgba(212,135,10,.25); }
+
+    .lp-title-idle {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; letter-spacing: .08em;
+      color: var(--muted);
+      white-space: nowrap;
+      transition: color .3s;
+    }
+    .loop-panel:not(.is-active):hover .lp-title-idle { color: var(--white); }
+
+/* Expanded info overlay — slides up when active */
+    .lp-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 0 2.5rem 2.6rem;
+      z-index: 3;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .45s ease .1s, transform .45s ease .1s;
+      pointer-events: none;
+    }
+.loop-panel.is-active .lp-info {
+      opacity: 1; transform: translateY(0);
+      pointer-events: auto;
+    }
+
+/* 2. Boost the number opacity and add a heavy shadow */
+    .lp-info-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem; line-height: 1;
+      color: rgba(212,135,10,.6); /* Bumped opacity from .15 to .6 */
+      text-shadow: 0 4px 15px rgba(0,0,0,0.95); /* Heavy shadow to separate from background */
+      margin-bottom: 0.2rem;
+    }
+/* 3. Add shadow to the title */
+    .lp-info h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem; letter-spacing: .05em;
+      color: var(--white); line-height: 1;
+      margin-bottom: .8rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+    }
+/* 4. Brighten the paragraph text and add shadow */
+    .lp-info p {
+      font-size: .97rem; line-height: 1.68;
+      color: rgba(232, 220, 200, 0.95); /* Changed from dark brown to bright off-white */
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9); /* Subtle shadow for readability */
+      max-width: 400px; font-weight: 400;
+    }
+    .lp-now-playing {
+      display: inline-flex; align-items: center; gap: .55rem;
+      margin-top: 1.2rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .62rem; letter-spacing: .25em;
+      color: var(--amber); text-transform: uppercase;
+    }
+    .lp-now-playing .np-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green-neon);
+      box-shadow: 0 0 6px var(--green-neon);
+      animation: pulse 1.4s infinite;
+    }
+
+    /* Responsive: stack vertically on small screens */
+    @media (max-width: 900px) {
+      .loop-accordion { flex-direction: column; height: auto !important; }
+      .loop-panel { flex: none !important; height: 210px; transition: height .55s cubic-bezier(.4,0,.2,1); }
+      .loop-panel.is-active { height: 380px; }
+      /* Fix 2: clip idle description to ~1 line (~5-6 words) on mobile when collapsed */
+      .lp-desc-idle {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: .8rem;
+      }
+      /* When active the idle layer is hidden anyway, but keep full text readable */
+      .loop-panel.is-active .lp-desc-idle { display: none; }
+    }
+    @media (max-width: 640px) {
+      .loop-panel { height: 180px; }
+      .loop-panel.is-active { height: 320px; }
+      .lp-info h3 { font-size: 2rem; }
+    }
+
+    /* ROLES — 6 roles in 3-col grid */
+    #roles { position: relative; }
+    .roles-header { margin-bottom: 4rem; }
+    .roles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; background: rgba(212,135,10,.08); }
+    .role-card { background: var(--bg); padding: 0 0 2rem 0; position: relative; overflow: hidden; transition: background .3s; }
+    .role-card:hover { background: rgba(212,135,10,.05); }
+    /* Role illustration canvas */
+/* The box now dynamically scales to a tall portrait shape instead of a short 160px height */
+.role-img { 
+  width: 68%; 
+  aspect-ratio: 1080 / 1920; 
+  height: auto; 
+  display: block; 
+  position: relative; 
+  background: #050302; 
+  margin: 0 auto; /* This centers the beetle container */
+}
+    .role-img canvas { width: 100%; height: 100%; display: block; object-fit: cover; }
+    
+    /* object-fit: contain ensures the image is never cropped */
+    .role-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; }
+    
+    .role-img-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+      background: linear-gradient(to bottom, transparent, var(--bg));
+      pointer-events: none; transition: background .3s; z-index: 2; /* Increased z-index to sit above the photo */
+    }
+    .role-card:hover .role-img-overlay { background: linear-gradient(to bottom, transparent, rgba(212,135,10,.05)); }
+    .role-card-body { padding: 1.4rem 2rem 0; }
+    .role-tag { font-family: 'Share Tech Mono', monospace; font-size: .64rem; letter-spacing: .35em; color: var(--green-neon); text-transform: uppercase; margin-bottom: .8rem; display: block; }
+    .role-card h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .06em; color: var(--white); margin-bottom: .7rem; }
+    .role-card p { font-size: .95rem; line-height: 1.65; color: var(--muted); }
+    /* .role-bar { margin-top: 1.2rem; height: 2px; background: rgba(212,135,10,.15); position: relative; }
+    .role-bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(to right, var(--amber), var(--green)); transition: width 1.2s ease; } */
+
+    /* ECONOMY */
+    #economy { background: var(--mud); display: grid; grid-template-columns: 1fr 1.2fr; gap: 5rem; align-items: center; }
+.map-container {
+      position: relative;
+      width: 100%;
+      max-width: 550px; /* Limits the map size on wide monitors */
+      margin: 0 auto;   /* Centers it neatly */
+      aspect-ratio: 16 / 11;
+      border: 1px solid rgba(212, 135, 10, 0.2);
+      background: var(--bg);
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    }
+    .economy-map {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+    }
+    .map-container:hover .economy-map {
+      transform: scale(1.08);
+      opacity: 1;
+    }
+    .economy-text p { margin-top: 1.4rem; font-size: 1.05rem; line-height: 1.72; color: var(--muted); }
+    .economy-text p strong { color: var(--text); }
+    .economy-list { margin-top: 2rem; list-style: none; display: flex; flex-direction: column; gap: .8rem; }
+    .economy-list li { display: flex; align-items: flex-start; gap: .9rem; font-size: .97rem; color: var(--muted); }
+    .economy-list li::before { content: '▸'; color: var(--amber); flex-shrink: 0; margin-top: .1rem; }
+
+    /* PHILOSOPHY */
+    #philosophy { text-align: center; padding: 8rem 5vw; position: relative; overflow: hidden; }
+    .philosophy-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(126,200,69,.06) 0%, transparent 70%); }
+    #philosophy h2 { font-size: clamp(2.8rem, 5.5vw, 5rem); max-width: 800px; margin-inline: auto; }
+    #philosophy .big-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem, 9vw, 9rem); letter-spacing: .03em; line-height: .9; color: transparent; -webkit-text-stroke: 1px rgba(212,135,10,.35); margin: 2rem 0; display: block; }
+    #philosophy p { max-width: 620px; margin-inline: auto; font-size: 1.1rem; line-height: 1.72; color: var(--muted); }
+    .pill-row { display: flex; flex-wrap: wrap; gap: .8rem; justify-content: center; margin-top: 2.5rem; }
+    .pill { font-family: 'Share Tech Mono', monospace; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; border: 1px solid rgba(212,135,10,.3); color: var(--muted); padding: .5rem 1.1rem; transition: border-color .25s, color .25s; }
+    .pill:hover { border-color: var(--amber); color: var(--amber-glow); }
+
+    /* CTA */
+    #cta { background: var(--mud); text-align: center; padding: 8rem 5vw; position: relative; overflow: hidden; }
+    #cta::before { content: 'DUNG BEETLES'; font-family: 'Bebas Neue', sans-serif; font-size: 18vw; letter-spacing: .05em; color: transparent; -webkit-text-stroke: 1px rgba(212,135,10,.06); position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none; z-index: 0; }
+    #cta > * { position: relative; z-index: 1; }
+    #cta h2 { font-size: clamp(2.5rem, 5vw, 4.5rem); max-width: 600px; margin-inline: auto; }
+    #cta p { margin: 1.4rem auto 2.8rem; max-width: 440px; font-size: 1rem; line-height: 1.7; color: var(--muted); }
+    .email-form { display: flex; gap: 0; justify-content: center; max-width: 480px; margin-inline: auto; }
+    .email-form input { flex: 1; background: rgba(255,248,238,.05); border: 1px solid rgba(212,135,10,.25); border-right: none; color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: .8rem; letter-spacing: .1em; padding: .9rem 1.2rem; outline: none; transition: border-color .25s; }
+    .email-form input:focus { border-color: var(--amber); }
+    .email-form input::placeholder { color: var(--muted); }
+    .email-form button { background: var(--amber); border: none; color: var(--bg); font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .2em; padding: .9rem 1.8rem; cursor: none; transition: background .25s; }
+    .email-form button:hover { background: var(--amber-glow); }
+    #signup-msg { margin-top: 1rem; font-family: 'Share Tech Mono', monospace; font-size: .72rem; letter-spacing: .2em; color: var(--green-neon); opacity: 0; transition: opacity .4s; }
+
+    /* ADMIN MODAL */
+    #admin-modal {
+      display: none; position: fixed; inset: 0; z-index: 9800;
+      background: rgba(0,0,0,.88); backdrop-filter: blur(12px);
+      align-items: center; justify-content: center;
+    }
+    #admin-modal.open { display: flex; }
+    .admin-box {
+      background: var(--bg2); border: 1px solid rgba(212,135,10,.3);
+      width: min(680px, 94vw); max-height: 75vh; display: flex; flex-direction: column;
+      padding: 2.4rem; gap: 1.4rem;
+    }
+    .admin-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: .1em; color: var(--amber-glow); }
+    .admin-sub { font-family: 'Share Tech Mono', monospace; font-size: .68rem; letter-spacing: .2em; color: var(--muted); }
+    #email-list { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: .5rem; }
+    .email-entry { display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; background: rgba(212,135,10,.05); border: 1px solid rgba(212,135,10,.1); }
+    .email-entry-addr { font-family: 'Share Tech Mono', monospace; font-size: .78rem; color: var(--text); }
+    .email-entry-date { font-family: 'Share Tech Mono', monospace; font-size: .62rem; color: var(--muted); }
+    .admin-actions { display: flex; gap: .8rem; flex-wrap: wrap; }
+    .admin-btn { font-family: 'Share Tech Mono', monospace; font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; padding: .6rem 1.2rem; border: 1px solid rgba(212,135,10,.3); background: transparent; color: var(--amber); cursor: pointer; transition: background .2s; }
+    .admin-btn:hover { background: rgba(212,135,10,.12); }
+    .admin-btn.danger { border-color: rgba(255,80,80,.3); color: #ff6b6b; }
+    .admin-btn.danger:hover { background: rgba(255,80,80,.1); }
+    .admin-close { position: absolute; top: 1.5rem; right: 1.5rem; font-family: 'Share Tech Mono', monospace; font-size: .7rem; color: var(--muted); background: transparent; border: 1px solid rgba(107,92,69,.4); padding: .4rem .8rem; cursor: pointer; }
+    .admin-close:hover { color: var(--text); }
+
+    /* FOOTER */
+    footer { padding: 2.5rem 5vw; border-top: 1px solid rgba(212,135,10,.1); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: .12em; color: var(--amber); }
+    .footer-copy { font-family: 'Share Tech Mono', monospace; font-size: .63rem; letter-spacing: .2em; color: var(--muted); }
+    .footer-links { display: flex; gap: 1.8rem; list-style: none; }
+    .footer-links a { font-family: 'Share Tech Mono', monospace; font-size: .63rem; letter-spacing: .18em; color: var(--muted); text-decoration: none; text-transform: uppercase; transition: color .2s; }
+    .footer-links a:hover { color: var(--amber-glow); }
+
+    /* BIDIRECTIONAL REVEAL — toggle visible on/off */
+    .reveal, .reveal-left, .reveal-right {
+      opacity: 0;
+      transition: opacity .75s ease, transform .75s ease;
+    }
+    .reveal { transform: translateY(28px); }
+    .reveal-left { transform: translateX(-32px); }
+    .reveal-right { transform: translateX(32px); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    /* KEYFRAMES */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes scrollPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+    @keyframes shimmer { 0%{left:-100%} 100%{left:200%} }
+
+    /* RESPONSIVE */
+    /* HAMBURGER for mobile nav */
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;background:transparent;border:1px solid rgba(212,135,10,.3);cursor:pointer;padding:8px;transition:border-color .25s;flex-shrink:0;}
+    .nav-hamburger:hover{border-color:var(--amber);}
+    .nav-hamburger span{display:block;width:100%;height:1.5px;background:var(--amber);transition:transform .3s ease,opacity .3s ease;transform-origin:center;}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+    .nav-hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+    .nav-hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+    .mobile-nav{position:fixed;top:0;left:0;right:0;background:rgba(6,4,2,.97);backdrop-filter:blur(20px);z-index:490;padding:6rem 2rem 2.5rem;display:flex;flex-direction:column;gap:0;transform:translateY(-100%);transition:transform .4s cubic-bezier(.4,0,.2,1);border-bottom:1px solid rgba(212,135,10,.2);}
+    .mobile-nav.open{transform:translateY(0);}
+    .mobile-nav a{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.08em;color:var(--muted);text-decoration:none;text-transform:uppercase;padding:.9rem 0;border-bottom:1px solid rgba(212,135,10,.08);transition:color .2s,padding-left .2s;display:block;}
+    .mobile-nav a:hover{color:var(--amber-glow);padding-left:.6rem;}
+    .mobile-nav-cta{margin-top:1.5rem;display:flex;flex-direction:column;gap:.7rem;}
+    .mobile-nav-cta button{width:100%;padding:.9rem;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;}
+
+    @media (max-width: 900px) { 
+      /* MOBILE NAV SQUISHER - Prevents JP text from covering the logo */
+      nav { padding: 0.8rem 1rem !important; }
+      .nav-right { gap: 0.3rem !important; }
+      .lang-toggle { margin-right: 0.3rem !important; }
+      .lang-btn { padding: 0.3rem 0.5rem !important; font-size: 0.6rem !important; }
+      .nav-wip, .nav-cta, .nav-back { 
+        padding: 0.4rem 0.6rem !important; 
+        font-size: 0.55rem !important; 
+        white-space: nowrap !important;
+      }
+      .nav-logo { font-size: 1.2rem !important; flex-shrink: 0; }
+
+      /* Keeps your hamburger menu working */
+      .nav-hamburger { display: flex; } 
+    }
+@media (max-width: 900px) {
+  /* FIX: Removes the BG Image and the Fade Overlay on Mobile Only */
+  #hero {
+    background-image: none !important;
+    background: var(--bg) !important; /* Reverts to the original solid dark color */
+  }
+
+  #hero::after {
+    display: none !important; /* Removes the side-fading mask */
+  }
+  
+  /* Rest of your mobile styles... */
+  nav { padding: 1.2rem 1.5rem; }
+}   
+      /* This ensures that on any screen smaller than 900px, 
+       the roles stack vertically as 1 per row */
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      #world, #economy { grid-template-columns: 1fr; }
+      .stats-bar { flex-wrap: wrap; }
+      .stat { flex: 0 0 50%; }
+      .roles-grid { 
+        grid-template-columns: 1fr !important; 
+        gap: 3rem; 
+      }
+
+      .role-card {
+        padding: 0 1rem 2rem 1rem; 
+      }
+
+
+      /* Merged all the mobile image fixes into one clean block */
+      .role-img {
+        width: 85% !important; 
+        max-width: 320px; 
+        aspect-ratio: 1080 / 1920 !important;
+        height: auto !important;
+        margin: 0 auto 1.5rem auto !important;
+      }
+      
+      .role-photo {
+        object-fit: contain !important;
+      }
+
+      .role-card h3 {
+        font-size: 2.4rem; 
+        text-align: center;
+      }
+
+      .role-card p {
+        text-align: center; 
+        max-width: 100%;
+      }
+      
+      .role-tag {
+        text-align: center;
+      }
+
+      section { padding: 5rem 1.4rem; }
+      .email-form { flex-direction: column; }
+      .email-form input { border-right: 1px solid rgba(212,135,10,.25); border-bottom: none; }
+      .nav-right { gap: .4rem; }
+      .nav-wip, .nav-cta { font-size: .62rem; padding: .45rem .9rem; }
+    }
+  </style>
+<script src="wip-content.js?v=1777495360"></script>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ADMIN MODAL (Ctrl+Shift+A) -->
+<div id="admin-modal">
+  <div class="admin-box" style="position:relative;">
+    <button class="admin-close" onclick="closeAdmin()">✕ Close</button>
+    <div class="admin-title">// WAITLIST DATABASE</div>
+    <div class="admin-sub" id="admin-count">0 emails stored locally · Use Formspree for cloud storage</div>
+    <div id="email-list"></div>
+    <div class="admin-actions">
+      <button class="admin-btn" onclick="exportEmails()">Export CSV</button>
+      <button class="admin-btn" onclick="copyEmails()">Copy All</button>
+      <button class="admin-btn danger" onclick="clearEmails()">Clear All</button>
+    </div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.15em;color:var(--muted);line-height:1.6;">
+      ⚠ LOCAL STORAGE ONLY — Emails are stored in this browser. To collect emails from all visitors,<br>
+      replace YOUR_FORM_ID in the JS with your Formspree.io form ID (free at formspree.io).
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">DUNG<span>BEETLES</span></a>
+  <ul class="nav-links">
+    <li><a href="#world">The World</a></li>
+    <li><a href="#loop">Gameplay</a></li>
+    <li><a href="#roles">Roles</a></li>
+    <li><a href="#philosophy">Philosophy</a></li>
+  </ul>
+  <div class="nav-right">
+   <div class="lang-toggle">
+      <div class="lang-btn active" id="lang-en" onclick="changeLanguage('en')">EN</div>
+      <div class="lang-btn" id="lang-ja" onclick="changeLanguage('ja')">JP</div>
+    </div>
+    
+    <button class="nav-wip" onclick="window.location.href='wip.html'">⬡ DIP</button>
+    <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Join Waitlist</button>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobile-nav">
+  <a href="#world" onclick="closeMobileNav()">The World</a>
+  <a href="#loop" onclick="closeMobileNav()">Gameplay</a>
+  <a href="#roles" onclick="closeMobileNav()">Roles</a>
+  <a href="#philosophy" onclick="closeMobileNav()">Philosophy</a>
+  <div class="mobile-nav-cta">
+    <button class="btn-primary" onclick="closeMobileNav();document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Join the Fight</button>
+    <button class="btn-ghost" onclick="closeMobileNav();window.location.href='wip.html'">⬡ Dung In Progress</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-bg-glow"></div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">5v5 · Objective Action · Micro Battlefield</span>
+    <h1 class="hero-title">DUNG<br><span class="line2">BEETLES</span></h1>
+    <p class="hero-subtitle">Determined. Resilient. Scavengers.<br>Compete in the most intense six-legged showdown nature has ever seen.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Join the Fight</button>
+      <button class="btn-ghost" onclick="document.getElementById('loop').scrollIntoView({behavior:'smooth'})">How It's Played</button>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="accent">●</span><span>Gather</span><span class="accent">●</span><span>Roll</span><span class="accent">●</span>
+    <span>Defend</span><span class="accent">●</span><span>Bank</span><span class="accent">●</span><span>Steal</span><span class="accent">●</span>
+    <span>5 v 5</span><span class="accent">●</span><span>Dung Economy</span><span class="accent">●</span>
+    <span>Objective Over Elimination</span><span class="accent">●</span><span>Carrier State</span><span class="accent">●</span>
+    <span>Stealth Strike</span><span class="accent">●</span><span>Storm Charge</span><span class="accent">●</span>
+    <span>Gather</span><span class="accent">●</span><span>Roll</span><span class="accent">●</span>
+    <span>Defend</span><span class="accent">●</span><span>Bank</span><span class="accent">●</span><span>Steal</span><span class="accent">●</span>
+    <span>5 v 5</span><span class="accent">●</span><span>Dung Economy</span><span class="accent">●</span>
+    <span>Objective Over Elimination</span><span class="accent">●</span><span>Carrier State</span>
+  </div>
+</div>
+
+<section id="gameplay">
+  <div style="margin-bottom:3rem;">
+    <span class="tag reveal">// Concept Art & Early Builds</span>
+    <h2 class="reveal">CURRENT <em>PROGRESS</em></h2>
+    <p class="reveal" style="margin-top:1rem; font-size:1.08rem; color:var(--muted); max-width:600px;">
+      We are actively building this. Here is a raw look at our 3D rigged models, conceptual art directions, and early mechanical prototypes. 
+    </p>
+  </div>
+  <div id="dynamic-media-grid"></div>
+</section>
+
+<section id="world">
+  <div class="world-visual reveal-left">
+    <!-- Removed the canvas and added your new image -->
+    <img src="Elements/Micro.png" alt="Micro Battlefield Beetle" class="world-image">
+    
+    <!-- Kept your glowing corners for the frame -->
+    <div class="world-corner tl"></div><div class="world-corner tr"></div>
+    <div class="world-corner bl"></div><div class="world-corner br"></div>
+  </div>
+  <div class="world-text">
+    <span class="tag reveal">// The Worldview</span>
+    <h2 class="reveal">THE <em>MICRO</em><br>BATTLEFIELD</h2>
+    <p class="reveal">Welcome to the chaotic, vibrant, nature-inspired world of <strong>Dung Beetles</strong>. You don't control supersoldiers — you control <strong>determined, resilient scavengers</strong> surviving in an oversized world.</p>
+    <p class="reveal">Two factions clash across a nature-scale arena. Every blade of grass is a wall. Every pebble is a fortress. Every pile of dung is victory itself.</p>
+    <p class="reveal">The core fantasy lives in <strong>agility, instinct, and teamwork</strong> — and the chaos of competing for your most precious resource.</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat reveal"><div class="stat-num">5v5</div><div class="stat-label">Team Format</div></div>
+  <div class="stat reveal"><div class="stat-num">6</div><div class="stat-label">Distinct Roles</div></div>
+  <div class="stat reveal"><div class="stat-num">3x</div><div class="stat-label">Dung Economy Uses</div></div>
+<div class="stat reveal"><div class="stat-num"><span style="font-family: system-ui, -apple-system, sans-serif;">∞</span></div><div class="stat-label">Tactical Depth</div></div>
+</div>
+
+<!-- CORE LOOP -->
+<section id="loop">
+  <div class="loop-header">
+    <span class="tag reveal">// Core Loop</span>
+    <h2 class="reveal">HOW IT'S <em>PLAYED</em></h2>
+  </div>
+  <!-- ↓ UPDATE video src paths to match your actual mp4 filenames ↓ -->
+  <div class="loop-accordion reveal" id="loop-accordion">
+
+    <div class="loop-panel" data-key="harvest">
+      <video class="lp-video" src="videos/Harvest.mp4" loop muted playsinline preload="none"></video>
+      <div class="lp-scrim"></div>
+      <div class="lp-top-bar"></div>
+      <div class="lp-idle">
+        <div class="lp-num">01</div>
+        <div class="lp-title-idle">Harvest</div>
+        <p class="lp-desc-idle">Venture across the battlefield to collect small dung pickups or fight for the highly contested central dung pile. Every gram matters.</p>
+      </div>
+      <div class="lp-info">
+        <div class="lp-info-num">01</div>
+        <h3>Harvest</h3>
+        <p>Venture across the battlefield to collect small dung pickups or fight for the highly contested central dung pile. Every gram matters.</p>
+        <div class="lp-now-playing"><span class="np-dot"></span>Now Playing</div>
+      </div>
+    </div>
+
+    <div class="loop-panel" data-key="roll">
+      <video class="lp-video" src="videos/Roll.mp4" loop muted playsinline preload="none"></video>
+      <div class="lp-scrim"></div>
+      <div class="lp-top-bar"></div>
+      <div class="lp-idle">
+        <div class="lp-num">02</div>
+        <div class="lp-title-idle">Roll</div>
+        <p class="lp-desc-idle">Seize the central source and physically build massive dung rolls. Enter the universal Carrier State — trade your abilities for raw Momentum.</p>
+      </div>
+      <div class="lp-info">
+        <div class="lp-info-num">02</div>
+        <h3>Roll</h3>
+        <p>Seize the central source and physically build massive dung rolls. Enter the universal Carrier State — trade your abilities for raw Momentum.</p>
+        <div class="lp-now-playing"><span class="np-dot"></span>Now Playing</div>
+      </div>
+    </div>
+
+    <div class="loop-panel" data-key="escort">
+      <!-- Swapped video for an image -->
+      <img class="lp-image" src="Elements/Escort.jpg" alt="Escort Phase">
+      <div class="lp-scrim"></div>
+      <div class="lp-top-bar"></div>
+      <div class="lp-idle">
+        <div class="lp-num">03</div>
+        <div class="lp-title-idle">Escort</div>
+        <p class="lp-desc-idle">Your teammates become your shield. Coordinate escort formations, body-block enemy interceptors, and punch through defensive lines.</p>
+      </div>
+      <div class="lp-info">
+        <div class="lp-info-num">03</div>
+        <h3>Escort</h3>
+        <p>Your teammates become your shield. Coordinate escort formations, body-block enemy interceptors, and punch through defensive lines.</p>
+        <div class="lp-now-playing"><span class="np-dot"></span>Now Playing</div>
+      </div>
+    </div>
+
+    <div class="loop-panel" data-key="bank">
+      <!-- Swapped video for an image -->
+      <img class="lp-image" src="Elements/Bank.jpg" alt="Bank Phase">
+      <div class="lp-scrim"></div>
+      <div class="lp-top-bar"></div>
+      <div class="lp-idle">
+        <div class="lp-num">04</div>
+        <div class="lp-title-idle">Bank</div>
+        <p class="lp-desc-idle">Store resources at your home base to climb the score. Invest in turrets, walls, traps, or observation beetles. Defend what you've earned.</p>
+      </div>
+      <div class="lp-info">
+        <div class="lp-info-num">04</div>
+        <h3>Bank</h3>
+        <p>Store resources at your home base to climb the score. Invest in turrets, walls, traps, or observation beetles. Defend what you've earned.</p>
+        <div class="lp-now-playing"><span class="np-dot"></span>Now Playing</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ROLES — 6 roles -->
+<section id="roles">
+  <div class="roles-header">
+    <span class="tag reveal">// Roster</span>
+    <h2 class="reveal">SIX <em>ROLES</em>,<br>INFINITE PLAY</h2>
+  </div>
+<div class="roles-grid">
+    <div class="role-card reveal" data-role="defender">
+      <div class="role-img">
+        <canvas class="role-canvas" width="360" height="160" data-role="defender"></canvas>
+        <img src="Beetles/defender.png" alt="Defender" class="role-photo" onerror="this.style.display='none'">
+        <div class="role-img-overlay"></div>
+      </div>
+      <div class="role-card-body">
+        <span class="role-tag">Role 01</span>
+        <h3>Defender</h3>
+        <p>Masters of territory. Defenders anchor your base perimeter, manage turret deployment, and intercept enemy carriers with precision knockback.</p>
+      </div>
+    </div>
+<div class="role-card reveal" data-role="attacker">
+      <div class="role-img">
+        <canvas class="role-canvas" width="360" height="160" data-role="attacker"></canvas>
+        <img src="Beetles/attacker.png" alt="Attacker" class="role-photo" onerror="this.style.display='none'">
+        <div class="role-img-overlay"></div>
+      </div>
+      <div class="role-card-body">
+        <span class="role-tag">Role 02</span>
+        <h3>Attacker</h3>
+        <p>Born to disrupt. Attackers slash into enemy formations, strip carried dung from opponents, and create chaos that turns the tide of any escort.</p>
+      </div>
+    </div>
+<div class="role-card reveal" data-role="scout">
+      <div class="role-img">
+        <canvas class="role-canvas" width="360" height="160" data-role="scout"></canvas>
+        <img src="Beetles/scout.png" alt="Scout" class="role-photo" onerror="this.style.display='none'">
+        <div class="role-img-overlay"></div>
+      </div>
+      <div class="role-card-body">
+        <span class="role-tag">Role 03</span>
+        <h3>Scout</h3>
+        <p>Information is the ultimate weapon. Scouts reveal threats before they manifest, track enemy positioning, and open flanking lanes through dark terrain.</p>
+      </div>
+    </div>
+<div class="role-card reveal" data-role="trapper">
+      <div class="role-img">
+        <canvas class="role-canvas" width="360" height="160" data-role="trapper"></canvas>
+        <img src="Beetles/trapper.png" alt="Trapper" class="role-photo" onerror="this.style.display='none'">
+        <div class="role-img-overlay"></div>
+      </div>
+      <div class="role-card-body">
+        <span class="role-tag">Role 04</span>
+        <h3>Trapper</h3>
+        <p>Patience is a weapon. Trappers lay hidden snares along choke points, redirect enemy traffic, and create devastating kill zones around objectives.</p>
+      </div>
+    </div>
+<div class="role-card reveal" data-role="stealth">
+      <div class="role-img">
+        <canvas class="role-canvas" width="360" height="160" data-role="stealth"></canvas>
+        <img src="Beetles/stealth.png" alt="Stealth" class="role-photo" onerror="this.style.display='none'">
+        <div class="role-img-overlay"></div>
+      </div>
+      <div class="role-card-body">
+        <span class="role-tag">Role 05</span>
+        <h3>Stealth</h3>
+        <p>Unseen. Unstoppable. Stealth beetles dissolve into shadow, slip through enemy lines undetected, and strike the moment their guard drops.</p>
+      </div>
+    </div>
+<div class="role-card reveal" data-role="storm">
+      <div class="role-img">
+        <canvas class="role-canvas" width="360" height="160" data-role="storm"></canvas>
+        <img src="Beetles/storm.png" alt="Storm" class="role-photo" onerror="this.style.display='none'">
+        <div class="role-img-overlay"></div>
+      </div>
+      <div class="role-card-body">
+        <span class="role-tag">Role 06</span>
+        <h3>Storm</h3>
+        <p>Elemental fury in an exoskeleton. Storm beetles generate electromagnetic pulses that disrupt enemy abilities and shatter dung rolls on impact.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ECONOMY -->
+<section id="economy">
+  <div class="economy-visual reveal-left">
+    <div class="map-container">
+  <img src="Elements/Map.png" alt="Battlefield Layout" class="economy-map">
+  
+  <div class="world-corner tl"></div><div class="world-corner tr"></div>
+  <div class="world-corner bl"></div><div class="world-corner br"></div>
+</div>
+  </div>
+  <div class="economy-text">
+    <span class="tag reveal">// Resource Economy</span>
+    <h2 class="reveal">ONE RESOURCE.<br><em>THREE</em> PURPOSES.</h2>
+    <p class="reveal">Dung is not just what you're fighting for — it's <strong>everything</strong>. It's your score, your ammunition, and your wallet. Every gram forces a strategic decision.</p>
+    <ul class="economy-list reveal">
+      <li><strong>Victory Points</strong> — Bank at your home base to climb toward the target score.</li>
+      <li><strong>Ability Fuel</strong> — Spend stored dung to power ranged attacks and special abilities.</li>
+      <li><strong>Base Currency</strong> — Invest in turrets, walls, observation beetles, and trap networks.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- PHILOSOPHY -->
+<section id="philosophy">
+  <div class="philosophy-bg"></div>
+  <span class="tag reveal">// Design Philosophy</span>
+  <span class="big-quote reveal">OBJECTIVE<br>OVER KILL</span>
+  <p class="reveal">Combat exists purely to <strong>interrupt enemy carriers, protect allies, reveal threats, and punish overextension</strong>. Knocking out an opponent simply forces them to drop their dung and respawn — creating tactical openings, not kill streaks.</p>
+  <div class="pill-row reveal">
+    <span class="pill">Low Lethality</span><span class="pill">Body Blocking</span>
+    <span class="pill">Spatial Awareness</span><span class="pill">Escort Coordination</span>
+    <span class="pill">Map Control</span><span class="pill">Tradeoff Decisions</span>
+    <span class="pill">Collaborative Play</span>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <span class="tag reveal">// Early Access</span>
+  <h2 class="reveal">READY TO <em>ROLL</em>?</h2>
+  <p class="reveal">Join the waitlist for exclusive early access, dev diaries, and beta invites. The dung pile won't gather itself.</p>
+  <div class="email-form reveal">
+    <input type="email" placeholder="your@email.com" id="email-input" />
+    <button onclick="handleSignup()">Join Now</button>
+  </div>
+  <p id="signup-msg"></p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">DUNG BEETLES</div>
+  <ul class="footer-links">
+    <li><a href="#"><i class="fa-brands fa-x-twitter"></i> X</a></li>
+    <li><a href="https://discord.gg/VxGkGjGh"><i class="fa-brands fa-discord"></i> Discord</a></li>
+    <li><a href="wip.html">WIP</a></li>
+    <li><a href="#">Press Kit</a></li>
+    <li><a href="#">Privacy</a></li>
+  </ul>
+  <p class="footer-copy">© 2024 The Crazy Capitaan Studios</p>
+</footer>
+
+<script>
+/* ─── HAMBURGER MENU ─── */
+function toggleMobileNav() {
+  const btn = document.getElementById('nav-hamburger');
+  const nav = document.getElementById('mobile-nav');
+  btn.classList.toggle('open');
+  nav.classList.toggle('open');
+  document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+}
+function closeMobileNav() {
+  const btn = document.getElementById('nav-hamburger');
+  const nav = document.getElementById('mobile-nav');
+  if (btn) btn.classList.remove('open');
+  if (nav) nav.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ─── TOUCH DETECTION — hide cursor on mobile/tablet ─── */
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isTouch) {
+  document.getElementById('cursor').style.display = 'none';
+  document.getElementById('cursor-ring').style.display = 'none';
+  document.body.style.cursor = 'auto';
+}
+
+/* ─── CUSTOM CURSOR (desktop only) ─── */
+if (!isTouch) {
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function animCursor() {
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    rx += (mx - rx) * .12; ry += (my - ry) * .12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animCursor);
+  })();
+  document.querySelectorAll('a, button, .role-card, .step, .pill').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(2)';
+      ring.style.transform = 'translate(-50%,-50%) scale(1.5)';
+      ring.style.borderColor = 'var(--amber-glow)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+      ring.style.transform = 'translate(-50%,-50%) scale(1)';
+      ring.style.borderColor = 'var(--amber)';
+    });
+  });
+}
+
+/* ─── HERO CANVAS — particles ─── */
+const hCanvas = document.getElementById('hero-canvas');
+const hCtx = hCanvas.getContext('2d');
+function resizeHero() { hCanvas.width = innerWidth; hCanvas.height = hCanvas.parentElement.offsetHeight; }
+resizeHero(); window.addEventListener('resize', resizeHero);
+const particles = Array.from({length: 80}, () => ({
+  x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+  r: Math.random() * 2.5 + .5, vx: (Math.random()-.5)*.4, vy: (Math.random()-.5)*.4,
+  alpha: Math.random()*.5+.15,
+  color: Math.random()>.6 ? '#d4870a' : Math.random()>.4 ? '#7ec845' : '#6b5c45'
+}));
+(function drawHero() {
+  hCtx.clearRect(0, 0, hCanvas.width, hCanvas.height);
+  particles.forEach((p, i) => {
+    particles.slice(i+1).forEach(q => {
+      const d = Math.hypot(p.x-q.x, p.y-q.y);
+      if (d < 90) { hCtx.save(); hCtx.globalAlpha = (1-d/90)*.08; hCtx.strokeStyle='#d4870a'; hCtx.lineWidth=.6; hCtx.beginPath(); hCtx.moveTo(p.x,p.y); hCtx.lineTo(q.x,q.y); hCtx.stroke(); hCtx.restore(); }
+    });
+    hCtx.save(); hCtx.globalAlpha = p.alpha; hCtx.fillStyle = p.color;
+    hCtx.beginPath(); hCtx.arc(p.x, p.y, p.r, 0, Math.PI*2); hCtx.fill(); hCtx.restore();
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = hCanvas.width; if (p.x > hCanvas.width) p.x = 0;
+    if (p.y < 0) p.y = hCanvas.height; if (p.y > hCanvas.height) p.y = 0;
+  });
+  requestAnimationFrame(drawHero);
+})();
+
+/* ─── WORLD CANVAS — beetle ─── */
+// const wCanvas = document.getElementById('world-canvas');
+// const wCtx = wCanvas.getContext('2d');
+// let wt = 0;
+// function drawBeetle(ctx, cx, cy, scale, t) {
+//   ctx.save(); ctx.translate(cx, cy + Math.sin(t*.03)*4); ctx.scale(scale, scale);
+//   const grd = ctx.createRadialGradient(0,0,10,0,0,80);
+//   grd.addColorStop(0,'rgba(212,135,10,.22)'); grd.addColorStop(1,'transparent');
+//   ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(0,0,80,0,Math.PI*2); ctx.fill();
+//   ctx.fillStyle='#1e1208'; ctx.strokeStyle='#d4870a'; ctx.lineWidth=1.5;
+//   ctx.beginPath(); ctx.ellipse(0,20,42,55,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+//   const sheen = ctx.createLinearGradient(-30,-10,20,50);
+//   sheen.addColorStop(0,'rgba(212,135,10,.18)'); sheen.addColorStop(.5,'rgba(126,200,69,.08)'); sheen.addColorStop(1,'transparent');
+//   ctx.fillStyle=sheen; ctx.beginPath(); ctx.ellipse(0,20,42,55,0,0,Math.PI*2); ctx.fill();
+//   ctx.strokeStyle='rgba(212,135,10,.4)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,-30); ctx.lineTo(0,70); ctx.stroke();
+//   ctx.fillStyle='#2a1a08'; ctx.strokeStyle='#d4870a'; ctx.lineWidth=1.5;
+//   ctx.beginPath(); ctx.ellipse(0,-26,26,20,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+//   ctx.fillStyle='#3a2510'; ctx.beginPath(); ctx.ellipse(0,-52,18,16,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+//   ctx.fillStyle='#aaff44'; ctx.shadowColor='#aaff44'; ctx.shadowBlur=8;
+//   ctx.beginPath(); ctx.arc(-9,-56,4,0,Math.PI*2); ctx.fill();
+//   ctx.beginPath(); ctx.arc(9,-56,4,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+//   ctx.strokeStyle='#d4870a'; ctx.lineWidth=2;
+//   ctx.beginPath(); ctx.moveTo(0,-65); ctx.lineTo(0,-90); ctx.stroke();
+//   ctx.beginPath(); ctx.moveTo(-8,-82); ctx.lineTo(0,-90); ctx.lineTo(8,-82); ctx.stroke();
+//   ctx.strokeStyle='rgba(212,135,10,.5)'; ctx.lineWidth=1;
+//   const aw=Math.sin(t*.04)*8;
+//   ctx.beginPath(); ctx.moveTo(-10,-63); ctx.quadraticCurveTo(-28-aw,-78,-22+aw,-92); ctx.stroke();
+//   ctx.beginPath(); ctx.moveTo(10,-63); ctx.quadraticCurveTo(28+aw,-78,22-aw,-92); ctx.stroke();
+//   ctx.strokeStyle='rgba(212,135,10,.6)'; ctx.lineWidth=1.5;
+//   const ls=Math.sin(t*.05)*10;
+//   [[-38,-10,-65,-5+ls],[-38,10,-68,22-ls],[-38,32,-60,52+ls],[38,-10,65,-5-ls],[38,10,68,22+ls],[38,32,60,52-ls]].forEach(([x1,y1,x2,y2])=>{
+//     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+//     ctx.fillStyle='rgba(212,135,10,.4)'; ctx.beginPath(); ctx.arc(x2,y2,2.5,0,Math.PI*2); ctx.fill();
+//   });
+//   ctx.restore();
+// }
+// function drawDungBall(ctx, cx, cy, r, t) {
+//   ctx.save(); ctx.translate(cx,cy); ctx.rotate(t*.02);
+//   const g=ctx.createRadialGradient(-r*.3,-r*.3,0,0,0,r);
+//   g.addColorStop(0,'#4a3020'); g.addColorStop(.7,'#2a1a08'); g.addColorStop(1,'#1a0e04');
+//   ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+//   ctx.strokeStyle='rgba(212,135,10,.25)'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.stroke();
+//   ctx.strokeStyle='rgba(212,135,10,.1)'; ctx.lineWidth=.8;
+//   for(let i=0;i<5;i++){const a=(i/5)*Math.PI; ctx.beginPath(); ctx.arc(0,0,r*.7,a,a+.9); ctx.stroke();}
+//   ctx.restore();
+// }
+// (function animWorld() {
+//   wCtx.clearRect(0,0,480,480); wCtx.fillStyle='#060402'; wCtx.fillRect(0,0,480,480);
+//   wCtx.strokeStyle='rgba(212,135,10,.05)'; wCtx.lineWidth=1;
+//   for(let i=0;i<480;i+=40){wCtx.beginPath();wCtx.moveTo(i,0);wCtx.lineTo(i,480);wCtx.stroke();wCtx.beginPath();wCtx.moveTo(0,i);wCtx.lineTo(480,i);wCtx.stroke();}
+//   const gg=wCtx.createRadialGradient(240,340,20,240,340,160);
+//   gg.addColorStop(0,'rgba(212,135,10,.12)'); gg.addColorStop(1,'transparent');
+//   wCtx.fillStyle=gg; wCtx.fillRect(0,0,480,480);
+//   drawDungBall(wCtx,240,360,38,wt); drawBeetle(wCtx,240,240,1.15,wt); wt++;
+//   requestAnimationFrame(animWorld);
+// })();
+
+/* ─── ROLE CANVASES — unique beetle art per role ─── */
+function drawRoleBeetle(canvas, role) {
+  const ctx = canvas.getContext('2d');
+  const photo = canvas.parentElement.querySelector('.role-photo'); // New line: finds the sibling image
+  const W = canvas.width, H = canvas.height;
+  let frame = 0;
+  const colors = {
+    defender: { primary: '#d4870a', accent: '#aaff44', bg: 'rgba(212,135,10,.08)' },
+    attacker:  { primary: '#ff6b35', accent: '#d4870a', bg: 'rgba(255,107,53,.08)' },
+    scout:     { primary: '#aaff44', accent: '#7ec845', bg: 'rgba(170,255,68,.06)' },
+    trapper:   { primary: '#c4a84a', accent: '#d4870a', bg: 'rgba(196,168,74,.07)' },
+    stealth:   { primary: '#6b8caa', accent: '#aaccff', bg: 'rgba(107,140,170,.06)' },
+    storm:     { primary: '#c466ff', accent: '#aaff44', bg: 'rgba(196,102,255,.08)' }
+  };
+  const c = colors[role] || colors.defender;
+
+function draw() {
+    
+    ctx.clearRect(0,0,W,H);
+    // bg atmosphere
+    const bg = ctx.createRadialGradient(W/2, H/2, 10, W/2, H/2, 100);
+    bg.addColorStop(0, c.bg); bg.addColorStop(1, 'transparent');
+    ctx.fillStyle = '#060402'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    // grid dots
+    ctx.fillStyle = 'rgba(212,135,10,.04)';
+    for(let x=20; x<W; x+=20) for(let y=10; y<H; y+=20) { ctx.beginPath(); ctx.arc(x,y,1,0,Math.PI*2); ctx.fill(); }
+
+    ctx.save();
+    ctx.translate(W/2, H/2 + Math.sin(frame*.04)*3);
+
+    const bob = 0;
+    // body
+    ctx.fillStyle = '#1a0e04'; ctx.strokeStyle = c.primary; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.ellipse(0, 8, 26, 34, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    // shell sheen
+    const sh = ctx.createLinearGradient(-18,-5,12,32);
+    sh.addColorStop(0, c.bg); sh.addColorStop(1, 'transparent');
+    ctx.fillStyle = sh; ctx.beginPath(); ctx.ellipse(0,8,26,34,0,0,Math.PI*2); ctx.fill();
+    // shell line
+    ctx.strokeStyle = c.primary+'55'; ctx.lineWidth = .8;
+    ctx.beginPath(); ctx.moveTo(0,-24); ctx.lineTo(0,42); ctx.stroke();
+    // thorax
+    ctx.fillStyle = '#2a1a08'; ctx.strokeStyle = c.primary; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(0,-16,17,13,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    // head
+    ctx.fillStyle = '#3a2510'; ctx.beginPath(); ctx.ellipse(0,-31,12,10,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    // eyes
+    ctx.fillStyle = c.accent; ctx.shadowColor = c.accent; ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(-5,-34,2.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(5,-34,2.5,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // role-specific elements
+    if (role === 'defender') {
+      // shield
+      ctx.strokeStyle = c.primary; ctx.lineWidth = 1.8; ctx.fillStyle = 'rgba(212,135,10,.12)';
+      ctx.beginPath(); ctx.moveTo(-20, -5); ctx.lineTo(-36,-5); ctx.lineTo(-36,14); ctx.lineTo(-20,24); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = c.primary+'88'; ctx.lineWidth = .8;
+      ctx.beginPath(); ctx.moveTo(-28,-5); ctx.lineTo(-28,20); ctx.stroke();
+      // fort indicators
+      ctx.fillStyle = c.primary; ctx.shadowColor = c.primary; ctx.shadowBlur = 4;
+      ctx.beginPath(); ctx.arc(22,-2,3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(26,10,3,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+    }
+    if (role === 'attacker') {
+      // extended claws
+      const cs = Math.sin(frame*.06)*5;
+      [[- 22,-8+cs,-40,-18+cs],[-18,2,-38,6],[22,-8-cs,40,-18-cs],[18,2,38,6]].forEach(([x1,y1,x2,y2])=>{
+        ctx.strokeStyle=c.primary; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+        ctx.fillStyle=c.accent; ctx.beginPath(); ctx.arc(x2,y2,3,0,Math.PI*2); ctx.fill();
+      });
+      // speed lines
+      ctx.strokeStyle='rgba(255,107,53,.2)'; ctx.lineWidth=.8;
+      for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(-48+i*6,-30+i*5);ctx.lineTo(-35+i*6,-22+i*5);ctx.stroke();}
+    }
+    if (role === 'scout') {
+      // large radar eye
+      ctx.strokeStyle = c.accent; ctx.lineWidth = 1.2; ctx.shadowColor = c.accent; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(26, -8, 14, 0, Math.PI*2); ctx.stroke(); ctx.shadowBlur=0;
+      const pulse = (Math.sin(frame*.07)+1)*.5;
+      ctx.strokeStyle = c.accent; ctx.globalAlpha = pulse*.6;
+      ctx.beginPath(); ctx.arc(26,-8, 14+pulse*6, 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha=1;
+      ctx.fillStyle = c.accent; ctx.shadowColor=c.accent; ctx.shadowBlur=5;
+      ctx.beginPath(); ctx.arc(26,-8,4,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+      // scan line
+      const ang = frame*.04;
+      ctx.strokeStyle=c.accent+'66'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(26,-8); ctx.lineTo(26+Math.cos(ang)*14,-8+Math.sin(ang)*14); ctx.stroke();
+    }
+    if (role === 'trapper') {
+      // trap mechanism arms
+      ctx.strokeStyle=c.primary; ctx.lineWidth=1.5;
+      [[-28,14,-42,28],[-24,22,-30,38],[28,14,42,28],[24,22,30,38]].forEach(([x1,y1,x2,y2])=>{
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      // trap teeth
+      ctx.fillStyle='rgba(196,168,74,.3)'; ctx.strokeStyle=c.primary; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(-42,28); ctx.lineTo(-38,20); ctx.lineTo(-34,28); ctx.lineTo(-30,20); ctx.lineTo(-26,28); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(42,28); ctx.lineTo(38,20); ctx.lineTo(34,28); ctx.lineTo(30,20); ctx.lineTo(26,28); ctx.stroke();
+      // glowing mine
+      const mp=(Math.sin(frame*.05)+1)*.5;
+      ctx.fillStyle=c.primary; ctx.shadowColor=c.primary; ctx.shadowBlur=4+mp*8;
+      ctx.beginPath(); ctx.arc(0,46,5,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+    }
+    if (role === 'stealth') {
+      // shadow/cloak aura
+      const sph = Math.sin(frame*.03)*.3+.5;
+      ctx.globalAlpha = sph*.4;
+      const scloak = ctx.createRadialGradient(0,8,5,0,8,44);
+      scloak.addColorStop(0,'rgba(107,140,170,.0)'); scloak.addColorStop(.6,'rgba(107,140,170,.3)'); scloak.addColorStop(1,'transparent');
+      ctx.fillStyle=scloak; ctx.beginPath(); ctx.ellipse(0,8,44,52,0,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+      // shimmer particles
+      for(let i=0;i<5;i++){
+        const a=(frame*.03+i*1.2), r=30+i*4;
+        const px=Math.cos(a)*r*.8, py=Math.sin(a)*r*.4+8;
+        const pp=(Math.sin(frame*.05+i)+1)*.5;
+        ctx.fillStyle=c.accent; ctx.globalAlpha=pp*.5;
+        ctx.beginPath(); ctx.arc(px,py,1.5,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+      }
+      // dim eyes (stealth mode)
+      ctx.fillStyle=c.accent+'66'; ctx.beginPath(); ctx.arc(-5,-34,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(5,-34,2,0,Math.PI*2); ctx.fill();
+    }
+    if (role === 'storm') {
+      // electric arcs
+      ctx.strokeStyle=c.primary; ctx.lineWidth=1.2; ctx.shadowColor=c.primary; ctx.shadowBlur=8;
+      const jitter=()=>(Math.random()-.5)*8;
+      for(let s=0;s<3;s++){
+        ctx.beginPath();
+        ctx.moveTo(-38+s*2, -10+s*8);
+        ctx.lineTo(-28+jitter(),-2+jitter());
+        ctx.lineTo(-18+jitter(), 6+jitter());
+        ctx.lineTo(-30, 18+s*4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(38-s*2, -10+s*8);
+        ctx.lineTo(28+jitter(),-2+jitter());
+        ctx.lineTo(18+jitter(), 6+jitter());
+        ctx.lineTo(30, 18+s*4);
+        ctx.stroke();
+      }
+      ctx.shadowBlur=0;
+      // pulse ring
+      const pr=(frame%40)/40;
+      ctx.strokeStyle=c.primary; ctx.globalAlpha=(1-pr)*.5;
+      ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,4,28+pr*20,0,Math.PI*2); ctx.stroke();
+      ctx.globalAlpha=1;
+      // charged core glow
+      ctx.fillStyle=c.primary; ctx.shadowColor=c.primary; ctx.shadowBlur=16;
+      ctx.beginPath(); ctx.arc(0,4,6,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+    }
+
+    // antennae
+    ctx.strokeStyle=c.primary+'66'; ctx.lineWidth=.8;
+    const aw=Math.sin(frame*.04)*5;
+    ctx.beginPath(); ctx.moveTo(-6,-38); ctx.quadraticCurveTo(-18-aw,-52,-14+aw,-62); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(6,-38); ctx.quadraticCurveTo(18+aw,-52,14-aw,-62); ctx.stroke();
+
+    // legs
+    ctx.strokeStyle=c.primary+'55'; ctx.lineWidth=1;
+    const ls=Math.sin(frame*.05)*6;
+    [[-22,-6,-36,-10+ls],[-22,6,-38,14-ls],[-22,20,-34,32+ls],[22,-6,36,-10-ls],[22,6,38,14+ls],[22,20,34,32-ls]].forEach(([x1,y1,x2,y2])=>{
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.fillStyle=c.primary+'44'; ctx.beginPath(); ctx.arc(x2,y2,1.8,0,Math.PI*2); ctx.fill();
+    });
+
+    ctx.restore();
+    frame++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+document.querySelectorAll('.role-canvas').forEach(canvas => {
+  drawRoleBeetle(canvas, canvas.dataset.role);
+});
+
+/* ─── BIDIRECTIONAL SCROLL REVEAL ─── */
+// Toggle .visible on/off — CSS transition handles both fade-in and fade-out
+const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+const scrollObs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    } else {
+      entry.target.classList.remove('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+revealEls.forEach(el => scrollObs.observe(el));
+
+// /* ─── ROLE BARS on entry ─── */
+// const barObs = new IntersectionObserver((entries) => {
+//   entries.forEach(e => {
+//     const fill = e.target.querySelector('.role-bar-fill');
+//     if (!fill) return;
+//     if (e.isIntersecting) {
+//       setTimeout(() => { fill.style.width = fill.dataset.width; }, 300);
+//     } else {
+//       fill.style.width = '0%';
+//     }
+//   });
+// }, { threshold: 0.3 });
+// document.querySelectorAll('.role-card').forEach(c => barObs.observe(c));
+
+/* ─── EMAIL STORAGE ─── */
+// Emails are stored in localStorage and optionally sent to Formspree.
+// To collect emails from ALL visitors (not just your own browser):
+//   1. Go to formspree.io → Create free account → New Form
+//   2. Copy your Form ID (looks like: xabc1234)
+//   3. Replace 'YOUR_FORM_ID' below with that ID
+
+const FORMSPREE_ID = 'mnjlyqko';  // ← replace this
+
+function handleSignup() {
+  const input = document.getElementById('email-input');
+  const val = input.value.trim();
+  const msg = document.getElementById('signup-msg');
+
+  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRx.test(val)) {
+    msg.textContent = '// ERROR: Invalid email address.';
+    msg.style.color = '#ff6b35'; msg.style.opacity = '1';
+    return;
+  }
+
+  // 1. Store locally
+  const stored = JSON.parse(localStorage.getItem('db_waitlist') || '[]');
+  const istTime = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  const entry = { email: val, date: istTime };
+  if (!stored.find(e => e.email === val)) {
+    stored.push(entry);
+    localStorage.setItem('db_waitlist', JSON.stringify(stored));
+  }
+
+  // 2. Send to Formspree (if configured)
+  if (FORMSPREE_ID !== 'YOUR_FORM_ID') {
+    fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+     body: JSON.stringify({ email: val, submitted_at_IST: istTime, _subject: '🪲 New Dung Beetles Waitlist Signup' })
+    }).catch(() => {}); // fail silently
+  }
+
+  msg.textContent = '// ACCESS GRANTED — Welcome to the swarm.';
+  msg.style.color = 'var(--green-neon)'; msg.style.opacity = '1';
+  input.value = '';
+}
+
+/* ─── ADMIN PANEL (Ctrl+Shift+A) ─── */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); openAdmin(); }
+});
+function openAdmin() {
+  const emails = JSON.parse(localStorage.getItem('db_waitlist') || '[]');
+  const list = document.getElementById('email-list');
+  const count = document.getElementById('admin-count');
+  count.textContent = `${emails.length} email${emails.length!==1?'s':''} stored locally · Replace FORMSPREE_ID for cloud collection`;
+  list.innerHTML = emails.length === 0
+    ? '<div style="font-family:\'Share Tech Mono\',monospace;font-size:.75rem;color:var(--muted);padding:1rem 0;">No emails collected yet.</div>'
+    : emails.map((e,i) => `<div class="email-entry"><span class="email-entry-addr">${e.email}</span><span class="email-entry-date">${e.date}</span></div>`).join('');
+  document.getElementById('admin-modal').classList.add('open');
+}
+function closeAdmin() { document.getElementById('admin-modal').classList.remove('open'); }
+function exportEmails() {
+  const emails = JSON.parse(localStorage.getItem('db_waitlist') || '[]');
+  const csv = 'Email,Date\n' + emails.map(e => `${e.email},${e.date}`).join('\n');
+  const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'dungbeetles_waitlist.csv'; a.click();
+}
+function copyEmails() {
+  const emails = JSON.parse(localStorage.getItem('db_waitlist') || '[]');
+  navigator.clipboard.writeText(emails.map(e=>e.email).join('\n'));
+  alert(`Copied ${emails.length} emails to clipboard!`);
+}
+function clearEmails() {
+  if (confirm('Clear all stored emails? This cannot be undone.')) {
+    localStorage.removeItem('db_waitlist');
+    openAdmin();
+  }
+}
+document.getElementById('admin-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('admin-modal')) closeAdmin();
+});
+
+
+
+/* ─── LOOP ACCORDION — desktop hover | mobile tap, no cross-contamination ─── */
+(function () {
+  const accordion = document.getElementById('loop-accordion');
+  if (!accordion) return;
+  const panels = Array.from(accordion.querySelectorAll('.loop-panel'));
+  let active = null;
+
+  function activate(panel) {
+    if (active && active !== panel) {
+      active.classList.remove('is-active');
+      accordion.classList.remove('is-expanded');
+      const oldVid = active.querySelector('.lp-video');
+      if (oldVid) oldVid.pause();
+    }
+    if (active === panel) return;
+    panel.classList.add('is-active');
+    accordion.classList.add('is-expanded');
+    const vid = panel.querySelector('.lp-video');
+    if (vid) { vid.currentTime = 0; vid.play().catch(() => {}); }
+    active = panel;
+  }
+
+  function deactivateAll() {
+    if (!active) return;
+    active.classList.remove('is-active');
+    accordion.classList.remove('is-expanded');
+    const vid = active.querySelector('.lp-video');
+    if (vid) { vid.pause(); vid.currentTime = 0; }
+    active = null;
+  }
+
+  if (isTouch) {
+    // MOBILE: tap only — no mouseenter/mouseleave interference
+    panels.forEach(panel => {
+      panel.addEventListener('click', e => {
+        e.stopPropagation();
+        if (active === panel) deactivateAll();
+        else activate(panel);
+      });
+    });
+    // Tap outside accordion collapses it
+    document.addEventListener('click', () => deactivateAll());
+  } else {
+    // DESKTOP: hover in/out
+    panels.forEach(panel => {
+      panel.addEventListener('mouseenter', () => activate(panel));
+    });
+    accordion.addEventListener('mouseleave', () => deactivateAll());
+  }
+})();
+
+
+/* ─── SCROLL EFFECTS (Nav Shrink & Scroll Hint Fade) ─── */
+window.addEventListener('scroll', () => {
+  // 1. Nav Shrink
+  const nav = document.querySelector('nav');
+  if (window.scrollY > 60) {
+    nav.style.padding = '.9rem 3rem';
+    nav.style.borderBottomColor = 'rgba(212,135,10,.22)';
+  } else {
+    nav.style.padding = '1.4rem 3rem';
+    nav.style.borderBottomColor = 'rgba(212,135,10,.12)';
+  }
+  
+  // 2. Scroll Hint Fade Out
+  const scrollHint = document.querySelector('.hero-scroll-hint');
+  if (scrollHint) {
+      if (window.scrollY > 20) {
+          scrollHint.classList.add('hidden'); // Fades out when you scroll down
+      } else {
+          scrollHint.classList.remove('hidden'); // Fades back in at the top
+      }
+  }
+}, { passive: true });
+/* ─── DYNAMIC MEDIA SLIDESHOW (From WIP) ─── */
+document.addEventListener('DOMContentLoaded', () => {
+    const mediaGrid = document.getElementById('dynamic-media-grid');
+    if (!mediaGrid) return; // Failsafe
+
+    if (typeof WIP_CONTENT !== 'undefined' && WIP_CONTENT.length > 0) {
+        const DURATION = 5000;
+        let current = 0;
+        let paused = false;
+        let progressStart = null;
+        let progressElapsed = 0;
+        let progressRaf = null;
+
+        const pad = n => String(n).padStart(2, '0');
+
+        mediaGrid.innerHTML = `
+          <div class="slideshow-outer" id="slideshow-wrap">
+            <div class="slide-main">
+              ${WIP_CONTENT.map((item, i) => `
+                <div class="slide-item ${i === 0 ? 'active' : ''}" data-i="${i}">
+                  ${item.type === 'video'
+                    ? `<video src="${item.file}" autoplay loop muted playsinline></video>`
+                    : `<img src="${item.file}" alt="${item.title}" ${i === 0 ? '' : 'loading="lazy"'} />`}
+                </div>`).join('')}
+              <div class="slide-info-overlay" id="slide-info">
+                <div class="slide-tag">// ${WIP_CONTENT[0].tag || 'update'}</div>
+                <div class="slide-title">${WIP_CONTENT[0].title}</div>
+                <div class="slide-desc">${WIP_CONTENT[0].desc}</div>
+              </div>
+              <div class="slide-counter" id="slide-ctr">${pad(1)} / ${pad(WIP_CONTENT.length)}</div>
+              <div class="slide-pause-badge">&#9646;&#9646; PAUSED</div>
+              <button class="slide-btn prev" id="slide-prev" aria-label="Previous">&#8592;</button>
+              <button class="slide-btn next" id="slide-next" aria-label="Next">&#8594;</button>
+              <div class="slide-progress"><div class="slide-progress-fill" id="slide-fill"></div></div>
+            </div>
+            <div class="slide-thumbs" id="slide-thumbs">
+              ${WIP_CONTENT.map((item, i) => `
+                <div class="slide-thumb ${i === 0 ? 'active' : ''}" data-i="${i}">
+                  ${item.type === 'video'
+                    ? `<video src="${item.file}" muted preload="metadata"></video>`
+                    : `<img src="${item.file}" alt="" loading="lazy" />`}
+                  <div class="slide-thumb-num">${pad(i + 1)}</div>
+                </div>`).join('')}
+            </div>
+          </div>`;
+
+        const fill = document.getElementById('slide-fill');
+        const info = document.getElementById('slide-info');
+        const ctr  = document.getElementById('slide-ctr');
+        const items = document.querySelectorAll('.slide-item');
+        const thumbs = document.querySelectorAll('.slide-thumb');
+        const wrap  = document.getElementById('slideshow-wrap');
+
+        function updateInfo(idx) {
+            const item = WIP_CONTENT[idx];
+            info.innerHTML = `
+              <div class="slide-tag">// ${item.tag || 'update'}</div>
+              <div class="slide-title">${item.title}</div>
+              <div class="slide-desc">${item.desc}</div>`;
+            ctr.textContent = `${pad(idx + 1)} / ${pad(WIP_CONTENT.length)}`;
+        }
+
+        function goTo(idx) {
+            idx = ((idx % WIP_CONTENT.length) + WIP_CONTENT.length) % WIP_CONTENT.length;
+            items[current].classList.remove('active');
+            thumbs[current].classList.remove('active');
+            current = idx;
+            items[current].classList.add('active');
+            thumbs[current].classList.add('active');
+            updateInfo(current);
+            
+            const thumbContainer = document.getElementById('slide-thumbs');
+            const activeThumb = thumbs[current];
+            const scrollPos = activeThumb.offsetLeft - (thumbContainer.clientWidth / 2) + (activeThumb.clientWidth / 2);
+            thumbContainer.scrollTo({ left: scrollPos, behavior: 'smooth' });
+            
+            resetProgress();
+        }
+
+        function startProgress() {
+            cancelAnimationFrame(progressRaf);
+            progressStart = performance.now() - progressElapsed;
+            function tick(now) {
+                if (paused) return;
+                const elapsed = now - progressStart;
+                const pct = Math.min(elapsed / DURATION * 100, 100);
+                fill.style.width = pct + '%';
+                if (pct < 100) progressRaf = requestAnimationFrame(tick);
+                else { progressElapsed = 0; goTo(current + 1); }
+            }
+            progressRaf = requestAnimationFrame(tick);
+        }
+
+        function pauseProgress(now) {
+            cancelAnimationFrame(progressRaf);
+            progressElapsed = now - progressStart;
+            fill.style.width = (Math.min(progressElapsed / DURATION * 100, 100)) + '%';
+        }
+
+        function resetProgress() {
+            cancelAnimationFrame(progressRaf);
+            progressElapsed = 0;
+            fill.style.transition = 'none';
+            fill.style.width = '0%';
+            if (!paused) startProgress();
+        }
+
+        // Mouse hover controls
+        wrap.addEventListener('mouseenter', () => { paused = true; pauseProgress(performance.now()); });
+        wrap.addEventListener('mouseleave', () => { paused = false; startProgress(); });
+
+        // Nav buttons & clicks
+        document.getElementById('slide-prev').addEventListener('click', e => { e.stopPropagation(); goTo(current - 1); });
+        document.getElementById('slide-next').addEventListener('click', e => { e.stopPropagation(); goTo(current + 1); });
+        document.querySelectorAll('.slide-thumb').forEach(t => {
+            t.addEventListener('click', e => { e.stopPropagation(); goTo(parseInt(t.dataset.i)); });
+        });
+
+        // Mobile Swipe
+        let touchX = null, touchY = null;
+        wrap.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, { passive: true });
+        wrap.addEventListener('touchend', e => {
+            if (touchX === null) return;
+            const dx = e.changedTouches[0].clientX - touchX;
+            const dy = e.changedTouches[0].clientY - touchY;
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) goTo(current + (dx < 0 ? 1 : -1));
+            touchX = null; touchY = null;
+        });
+
+        resetProgress();
+    }
+});
+</script>
+<div id="google_translate_element"></div>
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en', 
+      includedLanguages: 'en,ja', // Only allow English and Japanese
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+
+  function changeLanguage(langCode) {
+    // 1. Update our custom button UI
+    document.getElementById('lang-en').classList.remove('active');
+    document.getElementById('lang-ja').classList.remove('active');
+    document.getElementById('lang-' + langCode).classList.add('active');
+
+    // 2. Aggressively trigger the hidden Google dropdown
+    const selectField = document.querySelector(".goog-te-combo");
+    if (selectField) {
+      selectField.value = langCode;
+      selectField.dispatchEvent(new Event('change', { bubbles: true, cancelable: true })); 
+      
+      // FIX: Google Translate sometimes ignores the first programmatic click. 
+      // This 50ms delay "double-taps" it to guarantee a 1-click instant change.
+      setTimeout(() => {
+        if(selectField.value !== langCode) selectField.value = langCode;
+        selectField.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+      }, 50);
+    }
+  }
+</script>
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>
