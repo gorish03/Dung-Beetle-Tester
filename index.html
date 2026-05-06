@@ -64,6 +64,36 @@
         transform: none !important;
     }
     
+    /* --- KILL THE HOVER POPUP & MOBILE BUBBLE --- */
+    #goog-gt-tt, 
+    .goog-te-balloon-frame,
+    div[id^="goog-gt-"] { 
+        display: none !important; 
+    }
+    .goog-tooltip { 
+        display: none !important; 
+    }
+    .goog-text-highlight { 
+        background-color: transparent !important; 
+        border: none !important; 
+        box-shadow: none !important; 
+        pointer-events: none !important; 
+    }
+    #google_translate_element { 
+        display: none !important; 
+    }
+    
+    /* --- THE ABSOLUTE NUKE FOR THE MOBILE FLOATING WIDGET --- */
+    .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+    .VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc,
+    .VIpgJd-ZVi9od-ORHb-OEVmcd,
+    body > .skiptranslate {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    
     /* --- NEW ADDITIONS TO KILL THE HOVER POPUP --- */
     #goog-gt-tt, .goog-te-balloon-frame { 
         display: none !important; 
