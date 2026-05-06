@@ -453,13 +453,41 @@ background: linear-gradient(to right,
       .loop-accordion { flex-direction: column; height: auto !important; }
       .loop-panel { flex: none !important; height: 210px; transition: height .55s cubic-bezier(.4,0,.2,1); }
       .loop-panel.is-active { height: 380px; }
-      /* Fix 2: clip idle description to ~1 line (~5-6 words) on mobile when collapsed */
+      /* --- MOBILE SHORT DESCRIPTIONS --- */
+      /* Hides the long desktop text and positions the new text above the badge */
       .lp-desc-idle {
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        font-size: .8rem;
+        font-size: 0 !important; 
+        position: absolute;
+        bottom: 3.2rem; /* Sits exactly above the 1.2rem TAP TO VIEW badge */
+        right: 1.2rem;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* Injects the condensed 1-liners based on the panel's data-key */
+      .loop-panel[data-key="harvest"] .lp-desc-idle::after {
+        content: 'Collect pickups or fight for the center.';
+        font-size: 0.72rem;
+        color: var(--muted);
+        letter-spacing: 0.05em;
+      }
+      .loop-panel[data-key="roll"] .lp-desc-idle::after {
+        content: 'Build massive rolls for raw momentum.';
+        font-size: 0.72rem;
+        color: var(--muted);
+        letter-spacing: 0.05em;
+      }
+      .loop-panel[data-key="escort"] .lp-desc-idle::after {
+        content: 'Coordinate formations & break lines.';
+        font-size: 0.72rem;
+        color: var(--muted);
+        letter-spacing: 0.05em;
+      }
+      .loop-panel[data-key="bank"] .lp-desc-idle::after {
+        content: 'Store resources to invest in defenses.';
+        font-size: 0.72rem;
+        color: var(--muted);
+        letter-spacing: 0.05em;
       }
       /* When active the idle layer is hidden anyway, but keep full text readable */
       .loop-panel.is-active .lp-desc-idle { display: none; }
